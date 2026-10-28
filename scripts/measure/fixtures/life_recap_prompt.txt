@@ -1,0 +1,11 @@
+<character name="Alex" practiceLanguage="French" systemLanguage="English"/>
+
+<storySoFar empty="true"/>
+
+<recentEvents>
+<event kind="beat" speaker="narrator">La pluie tombe sur la place.</event>
+<event kind="decision">Go into the bakery</event>
+<event kind="beat" speaker="npc" name="Marie">Tu es en retard, comme le bus.</event>
+</recentEvents>
+
+<task>Write the "Previously on…" recap per the SI, in the system language ONLY. Return a single JSON object with a "text" field.</task>

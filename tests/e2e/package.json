@@ -1,0 +1,21 @@
+{
+  "name": "wurld-e2e",
+  "private": true,
+  "type": "commonjs",
+  "scripts": {
+    "test": "playwright test",
+    "test:headed": "playwright test --headed",
+    "test:ui": "playwright test --ui",
+    "test:debug": "playwright test --debug",
+    "test:report": "playwright show-report",
+    "test:no-emulator": "USE_AUTH_EMULATOR=false playwright test",
+    "emulator:start": "firebase emulators:start --only auth --project wurld-e27d8",
+    "emulator:stop": "kill $(cat .emulator.pid 2>/dev/null) 2>/dev/null; rm -f .emulator.pid"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.60.0",
+    "dotenv": "^16.4.5",
+    "firebase-admin": "^13.0.0",
+    "firebase-tools": "^14.27.0"
+  }
+}

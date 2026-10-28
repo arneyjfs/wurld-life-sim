@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <!-- Pre-paint theme init. Sets <html data-theme> from the stored
+         preference BEFORE first paint, so a dark-mode user never sees a
+         light flash (and vice versa) on app open. Previously the attribute
+         was only applied in a React effect (ThemeContext), one paint too
+         late — hence the flash. Inline + dependency-free so it runs with no
+         module/network wait. MUST stay in sync with src/lib/theme.ts
+         (STORAGE_KEY 'wurld:theme' + resolveTheme); guarded by
+         src/lib/theme.boot.test.ts. -->
+    <script>
+      (function () {
+        try {
+          var stored = localStorage.getItem('wurld:theme');
+          var mode =
+            stored === 'light' || stored === 'dark' || stored === 'system'
+              ? stored
+              : 'system';
+          var resolved =
+            mode === 'system'
+              ? window.matchMedia &&
+                window.matchMedia('(prefers-color-scheme: dark)').matches
+                ? 'dark'
+                : 'light'
+              : mode;
+          document.documentElement.dataset.theme = resolved;
+          // BOOT-THEME-2: the attribute alone selects the right CSS custom
+          // properties, but `html { background: var(--color-bg) }` lives in
+          // globals.css, which is only reached via the JS module graph. Until
+          // that stylesheet is parsed the page paints the UA canvas — so a
+          // dark-mode user whose OS is set to LIGHT saw a full-viewport white
+          // flash on every launch. Paint the resolved background inline, and
+          // set color-scheme so form controls + the scrollbar match too.
+          // Values MUST track --color-bg in globals.css (light #ffffff,
+          // dark #11101a); guarded by src/lib/theme.boot.test.ts.
+          document.documentElement.style.background =
+            resolved === 'dark' ? '#11101a' : '#ffffff';
+          document.documentElement.style.colorScheme = resolved;
+        } catch (e) {
+          /* storage blocked (private mode / sandbox) → CSS light default */
+        }
+      })();
+    </script>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" type="image/x-icon" sizes="16x16 32x32 48x48" href="/favicon.ico" />
+    <!-- `interactive-widget=overlays-content` activates Chromium's
+         VirtualKeyboard API behaviour: the keyboard slides over the page
+         without resizing the WebView, and CSS env(keyboard-inset-height)
+         updates PER FRAME during the keyboard animation. Paired with
+         `Keyboard.resize: 'none'` in capacitor.config.ts so the OS doesn't
+         resize on top of us. iOS WKWebView ignores this token (Apple
+         hasn't implemented it — WebKit bug 150401); we handle iOS via a
+         JS-set --kb-h CSS var animated by a CSS transition. -->
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=overlays-content" />
+    <!-- Initial theme-color. JS overrides this per-route via setWebThemeColor
+         (statusBar.ts) once useStatusBarChrome mounts. The light/dark
+         media-query pair below gives Android Chrome PWA the right initial
+         system-bar tint before JS runs, so a dark-mode user doesn't see a
+         white flash and a light-mode user doesn't see a black flash. -->
+    <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#0a0a0a" media="(prefers-color-scheme: dark)" />
+    <!-- color-scheme tells Android Chrome PWA that we support both light
+         and dark, so the system tints the bottom navigation bar to match
+         the user's preferred theme instead of forcing white. Without this,
+         the nav bar stays white regardless of theme-color updates. -->
+    <meta name="color-scheme" content="light dark" />
+    <!-- iOS's data detector turns any digit run it recognises into a blue
+         underlined `tel:` link that navigates OUT of the app on tap. In a chat
+         app that fires inside message bubbles — and contacts here are keyed by
+         phone number, so real numbers get typed. `-webkit-touch-callout: none`
+         (globals.css) suppresses the long-press preview but neither the link
+         styling nor the tap navigation; only this meta disables detection. -->
+    <meta name="format-detection" content="telephone=no" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <!-- Standardised replacement for apple-mobile-web-app-capable. Chromium
+         warns when only the apple- prefixed form is present; both are shipped
+         so neither engine complains. -->
+    <meta name="mobile-web-app-capable" content="yes" />
+    <!--
+      `black-translucent` makes iOS PWA standalone draw the status bar as a
+      transparent overlay above the WebView. The page's own background (and
+      any top-anchored header with `pt-safe-top` padding) paints behind the
+      system clock/icons, so the status-bar zone always matches whatever
+      element occupies the safe-area-top row — no per-route theme-color
+      gymnastics required.
+
+      `default` (the previous value) made iOS paint its own opaque grey
+      backdrop under the status bar, IGNORING <meta name="theme-color"> in
+      PWA standalone, which is why the chat-screen status bar stayed grey
+      even after the remove-and-recreate fix landed (1719351). That fix
+      still applies — it controls the in-Safari toolbar tint AND the
+      Capacitor StatusBar plugin colour on native — but the iOS PWA
+      standalone path needed this style flip to honour any tint at all.
+
+      Because the WebView now extends UNDER the system status bar,
+      modal/drawer scrims (`fixed inset-0`) naturally cover the status-bar
+      zone too: their 150 ms opacity fade-in / out animates the perceived
+      status-bar tint as a crossfade rather than the previous frame-zero
+      jump. The native Capacitor path doesn't need this — the OS handles
+      smooth status-bar transitions on installed apps.
+
+      iOS reads this meta tag once at app launch; if the user already
+      added the PWA to their home screen before this change shipped, they
+      need to re-add it (or relaunch) for the new value to take effect.
+    -->
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+    <meta name="application-name" content="Wurld" />
+    <meta name="apple-mobile-web-app-title" content="Wurld" />
+    <title>Wurlds</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

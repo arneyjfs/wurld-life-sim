@@ -1,0 +1,2207 @@
+@import "tailwindcss";
+@plugin "tailwindcss-animate";
+
+/*
+ * ─── Animation duration scale ────────────────────────────────────────────
+ *
+ * Use these durations consistently across the app so transitions feel
+ * coherent. Bigger surfaces lean slightly longer; transient affordances
+ * (popovers, toasts) stay snappy.
+ *
+ *   150ms  — backdrop fades (modal backdrops, picker backdrops).
+ *   200ms  — popovers, toasts, reaction chips, reply bar slide.
+ *            tailwindcss-animate utilities: `duration-200`.
+ *   250ms  — RECIPIENT message bubble enter/exit, and bubble exit generally.
+ *            Driven from `THEIRS_ENTER_MS` in components/Message/bubbleMotion.ts
+ *            via inline style, NOT a `duration-*` utility — a bracket value
+ *            built from a constant is invisible to Tailwind's JIT.
+ *   600ms  — SENDER's own bubble enter (`MINE_ENTER_MS`, MSG-BUBBLE-8). The one
+ *            deliberate outlier on this scale: it is tuned to the ~800ms gap
+ *            between the optimistic bubble painting and the translation
+ *            replacing its text, so the two read as one event. Comes back down
+ *            if the pipeline gets faster — see the spec.
+ *   280ms  — programmatic chat scroll (`scrollToAnimated` default).
+ *            Long enough to read as motion, short enough that a 5000px
+ *            scroll-to-bottom isn't a chore.
+ *   300ms  — larger chrome (drawers, full-screen sheets like LanguagePicker).
+ *
+ * Heart-burst keyframes below run 700ms because they're a one-shot
+ * celebratory affordance, not a UI state change.
+ */
+
+
+/* Dark-mode variant sources from <html data-theme="dark"> so ThemeContext
+   is the single source of truth. */
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+
+@theme {
+  /* safe-area spacing aliases — usable as p-safe-top, mb-safe-bottom, etc.
+   *
+   * `var(--safe-area-inset-*, env(...))` orders the sources of truth:
+   *   1. The `--safe-area-inset-*` CSS vars on <html>, injected by the
+   *      Android host (MainActivity) — works around the Chromium WebView
+   *      < v140 bug where `env(safe-area-inset-*)` returns 0 even with
+   *      `viewport-fit=cover`.
+   *   2. `env(safe-area-inset-*)` for iOS / PWA where env() works
+   *      natively.
+   *   3. `0px` as the absolute fallback.
+   */
+  --spacing-safe-top: var(--safe-area-inset-top, env(safe-area-inset-top, 0px));
+  --spacing-safe-right: var(--safe-area-inset-right, env(safe-area-inset-right, 0px));
+  --spacing-safe-bottom: var(--safe-area-inset-bottom, env(safe-area-inset-bottom, 0px));
+  --spacing-safe-left: var(--safe-area-inset-left, env(safe-area-inset-left, 0px));
+
+  /* z-index scale — explicit so overlays + image viewer + toasts layer
+     in the order users expect:
+       1000  long-press action menu backdrop
+       1100  reactor / drawer overlay
+       1150  life-sim story overlay (wurld intro, resume recap) — full-screen
+             but NOT a dialog: a completion overlay opening over one must win
+       1200  modal (LanguagePicker, ImageViewer, CountryDialPicker, and the
+             life-sim day / chapter completion screens)
+       1300  toast (must sit above every dialog / sheet)
+     Defined in @theme so Tailwind generates `z-(--z-modal)` etc. */
+  --z-life-overlay: 1150;
+  --z-modal: 1200;
+  --z-toast: 1300;
+
+  /* type scale (overrides Tailwind defaults for app-specific sizes) */
+  --text-md: 16px;
+  --text-xl: 22px;
+  --text-2xl: 28px;
+
+  /* font families */
+  --font-sans:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu,
+    Cantarell, sans-serif;
+  --font-mono: ui-monospace, "SF Mono", Menlo, Monaco, monospace;
+  /* IMMERSE-COPY-3 — the one handwritten line; Caveat is bundled (Latin only). */
+  --font-hand: "Caveat", var(--font-sans);
+
+  /* semantic colors — light theme defaults; dark overrides below */
+  --color-bg: #ffffff;
+  --color-bg-elevated: #ffffff;
+  --color-bg-hover: #f3f4f6;
+  --color-border: #e6e6ea;
+  --color-border-strong: #d1d5db;
+
+  --color-fg: #111111;
+  --color-fg-muted: #6b7280;
+  --color-fg-subtle: #9ca3af;
+  /* MSG-REVIEW-CLARIFY-2 — the composer's clarify placeholder: the theme's
+     purple ACCENT, muted. In clarify mode the composer is asking what you
+     MEANT, not inviting a message, so plain --color-fg-muted would make the
+     two states indistinguishable at a glance — but the tint has to be the
+     app's own accent, not a colour introduced for one input. Earlier cuts were
+     blue (#4cb8ff, then #5faddd), which belonged to no palette.
+
+     DERIVED, not a new hex: mixing --color-accent toward --color-fg-muted is
+     literally "the accent, muted", and because both sides are theme-scoped
+     this ONE declaration resolves correctly in light and dark — no second
+     value to keep in step, and a rebrand of the accent carries automatically.
+     Paired with italic (see Composer), which carries the "this is a hint"
+     signal so the colour never has to be loud enough to do it alone; at full
+     strength a placeholder reads as text already typed. */
+  --color-clarify-placeholder: color-mix(in srgb, var(--color-accent) 65%, var(--color-fg-muted));
+  --color-fg-inverse: #ffffff;
+
+  /* THEME-1 (docs/specs/theme.md): orchid, the sent bubble's hue, for actions
+     you take (links, active states). Was brand violet #7340f5, which read blue
+     beside the orchid bubble; that hue now lives only in the gradient. */
+  --color-accent: #a148e7;
+  --color-accent-fg: #ffffff;
+  --color-accent-hover: #8a2fba;
+  /* THEME-1: the ONE accent, violet from the middle of the gradient. Every solid
+     accent fill (switch tracks, checked boxes, small buttons, setup tour) is
+     this token: #a148e7 in light (white text 4.6:1), #a03ad6 in dark (5.2:1).
+     Prominent buttons wear --gradient-accent instead (THEME-13).
+     --color-accent is for accent text, borders and tints. */
+  --color-accent-strong: #a148e7;
+  /* THEME-6: quiet orchid for chat-header action icons + the word card. */
+  --color-icon-accent: #9f64d6;
+  --color-card-border: #e6def2;
+
+  /* Gradient accent used for primary CTAs (Practice, Send, Next, lesson
+     progress, install banner). Solid --color-accent stays for system
+     affordances like links. */
+  --color-gradient-accent-start: #7340f5;
+  --color-gradient-accent-end: #db53d7;
+  --gradient-accent: linear-gradient(135deg, #7340f5 0%, #db53d7 100%);
+
+  /* Chat bubbles: monochrome, single teal accent on both sides
+     (source: components/MessageBubble.tsx:518-529).
+     Mine uses a muted teal (#7fb5b1) so vocab underlines + read-tick
+     don't punch over the near-black bubble; theirs keeps the bright
+     teal because it reads fine on white.
+
+     2026-05-19: light-mode mine bubble takes a brand-aligned dark
+     purple (#332c4d) — distinctly purple at a glance, rather than the
+     previous near-neutral #1e1e1e. Pairs intentionally with dark
+     mode's #2c2641 so the app reads as the same product across themes.
+     Paired with a visible drop shadow (see MessageBubble.tsx) so the
+     bubble lifts off the page bg the same way 'theirs' bubbles do
+     in light mode. */
+  /* 2026-07 (v2.1): the mine-bubble colour was set app-wide (chat included) to
+     a richer purple at the owner's request (#9842cc read too bright → #7e33ac). */
+  /* THEME-2: orchid sent bubble (the brand gradient's midpoint hue,
+     ~273deg) with a narrow 135deg gradient (was flat #7e33ac). Flat fallback is the gradient midpoint. */
+  /* 2026-10-16: saturation up ~8 points at the same lightness. */
+  /* 2026-10-19: the owner's tuner export (THEME-9..12) — one saturated orchid,
+     a touch darker; both stops equal, so it paints flat. */
+  --color-bubble-mine: #942bcd;
+  --gradient-bubble-mine: linear-gradient(135deg, #942bcd 0%, #942bcd 100%);
+  --shadow-bubble-mine: inset 0 0 0 1px rgba(255, 255, 255, 0.12), 0 1px 3px rgba(60, 30, 100, 0.10);
+  --color-bubble-mine-fg: #ffffff;
+  /* Underline sits just OFF the bubble background it's drawn on: a lighter tint
+     of the SAME purple family as the mine bubble, subtle + on-brand, still
+     clearly an underline under the white text. v2.1: dialled BACK a notch
+     (was #d8b0f2) for a more subtle vocab underline. */
+  --color-bubble-mine-underline: rgba(255, 255, 255, 0.5);
+  /* THEME-4: translation line + timestamp cluster on the sent bubble. */
+  --color-bubble-mine-secondary: rgba(255, 255, 255, 0.8);
+  --color-bubble-mine-meta: rgba(255, 255, 255, 0.8);
+
+  /* THEME-3: neutral grey (2026-10-19, was lavender #f8f5fc), decoupled from
+     --color-bg-hover. */
+  --color-bubble-theirs: #f7f7f7;
+  --color-bubble-theirs-fg: #1e1e1e;
+  /* THEME-4: received translation line + timestamp (= fg-muted / fg-subtle). */
+  --color-bubble-theirs-secondary: #6b7280;
+  --color-bubble-theirs-meta: #9ca3af;
+  /* A soft lavender just off the light theirs-bubble bg (2026-06-20: a touch
+     more saturated so the underline reads on the pale bubble). */
+  --color-bubble-theirs-underline: #cdbfe3;
+
+  /* MSG-LINK-1 — a URL's underline is the bubble's own text colour in every
+     variant (owner, 2026-10-24). It stays OUTSIDE the purple family the vocab
+     underlines use, so a link still reads apart from a word that opens a
+     definition: a solid text-coloured line vs a lavender one. The blue pair
+     (#8fc3ff / #1f6feb) clashed with both bubbles. */
+  --color-link-underline-mine: currentColor;
+  --color-link-underline-theirs: currentColor;
+
+  /* MSG-VOCAB-14.2 — the saved flashcard glyph in the word popover. Brighter
+     than --color-success (owner pick "D", 2026-10-24) so the solid bookmark
+     reads at 12px on both bubbles. */
+  --color-flashcard-saved: #34c759;
+  /* MSG-VOCAB-14.1 — the popover's action circles on a received bubble. Paler
+     in light mode so the purple does not fight the green saved glyph. */
+  --color-vocab-circle-theirs: color-mix(in srgb, var(--color-accent) 7%, transparent);
+
+  /* Underline-active tint (a complex word is tapped) — same purple/lavender
+     family as the resting underline so the highlight reads consistent, but a
+     notch lighter+more opaque so the tapped word "lights up". Mine is a
+     near-opaque light-purple pill on the dark purple bubble; theirs stays an
+     alpha lavender wash on the light bubble (dark text reads through fine). */
+  --color-underline-active-bg-mine: rgb(151 108 199 / 0.95);
+  --color-underline-active-bg-theirs: rgba(117, 68, 216, 0.11);
+  /* Text colour of the tapped MINE word — same as normal bubble text so the
+     highlight reads consistent. Consumed in BubbleRows' renderVocabLeaf. */
+  --color-underline-active-fg-mine: #ffffff;
+
+  /* Read-receipt double-tick — pinned to the ORIGINAL teal so it stays put
+     when the vocab underline moves to purple (the two used to share a var). */
+  --color-read-tick: #7ac4be;
+
+  --color-danger: #b00020;
+  --color-success: #0f8a5f;
+  --color-warning: #f59e0b;
+
+  /* Modal / drawer backdrop scrim. Two flavours:
+     - `--color-scrim` is the standard dark wash used by every modal /
+       drawer, in both themes. Modal == "block out the page so you focus
+       on the modal", which wants a darker scrim than the page bg.
+     - `--color-scrim-lift` is the lighter tint behind a lifted bubble,
+       used only by the long-press MessageActionsMenu (RXN-MENU-1). No
+       blur: the chat behind stays readable and the white/grey bubble and
+       panel stand out against it (owner, 2026-10-24, option B). */
+  --color-scrim: rgba(0, 0, 0, 0.5);
+  --color-scrim-lift: rgba(0, 0, 0, 0.22);
+
+  /* Selected-chip fill (PronounsSection, theme chips, filter chips).
+     Sits between --color-bg-elevated (the card surface chips sit on) and
+     --color-bg-hover so the selected state lifts subtly without going
+     fully grey. */
+  --color-chip-selected: #f9fafb;
+
+  /* Muted standalone chip fill — date separators, deleted-message
+     tombstone, and similar "page furniture" surfaces that need to read
+     as grey against the bg-elevated chat bg WITHOUT competing with
+     the white "theirs" bubbles. Midpoint between --color-bg-hover
+     (gray-100 #f3f4f6, too light) and gray-200 (#e5e7eb, too heavy)
+     so the chip lifts visibly without going full mid-grey. */
+  --color-chip-muted: #ecedf0;
+
+  /* radii — extend Tailwind's defaults */
+  --radius-xs: 4px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 18px;
+}
+
+/* Browser-runtime safe-area floor — when the app runs in a regular tab
+   (or, in theory, a PWA URL opened in a regular tab), the real safe-area
+   insets resolve to 0, so the header/footer would otherwise hug the
+   address bar and bottom chrome. Bump top/bottom to a comfortable 1rem
+   minimum. Native + installed PWA keep the real env() insets (notches,
+   home indicators). main.tsx writes `data-runtime` on <html> at boot.
+   Overrides the resolved `--spacing-safe-*` tokens (used by SafeArea +
+   Tailwind `p-safe-*` utilities) AND the raw `--safe-area-inset-*` vars
+   (used by a few inline-style consumers like TabBar) so every consumer
+   picks up the floor without per-component patching. */
+[data-runtime="browser"],
+[data-runtime="pwa-tab"] {
+  --safe-area-inset-top: max(env(safe-area-inset-top, 0px), 1rem);
+  --safe-area-inset-bottom: max(env(safe-area-inset-bottom, 0px), 1rem);
+  --spacing-safe-top: max(env(safe-area-inset-top, 0px), 1rem);
+  --spacing-safe-bottom: max(env(safe-area-inset-bottom, 0px), 1rem);
+}
+
+/* CHROME-SAFE-5/6 (docs/specs/app-chrome.md) — iOS PWA standalone +
+   Capacitor native iOS cap the BOTTOM safe-area.
+
+   iOS reports 34pt for the home-indicator zone with black-translucent.
+   Bottom-anchored chrome paints its own bg THROUGH that zone
+   (CHROME-BOTTOM-2, via .pb-keyboard / TabBar paddingBottom), so the
+   indicator is drawn over our own bar rather than over content — which
+   means reserving the full 34pt on top of the bar's own padding just
+   makes the bar taller than the iOS chat apps we benchmark against.
+
+   The cap was 1rem (16px) until 2026-07; at that value the composer and
+   tab bar sat visibly tighter against the home indicator than
+   iMessage/WhatsApp on the same device (reported as the bottom safe area
+   feeling "a little small" on iOS PWA). 1.5rem restores the comfort gap
+   while keeping the deliberate reduction from 34pt.
+
+   min(), not max(): a device with no home indicator reports 0 and MUST
+   stay at 0 here, falling through to each consumer's own floor
+   (.pb-keyboard's 0.5rem, the TabBar's 0.25rem).
+
+   Both token families are set together — a consumer reading
+   --spacing-safe-bottom must never disagree with one reading
+   --safe-area-inset-bottom (CHROME-SAFE-1).
+
+   TOP inset is intentionally NOT capped — system clock + icons need
+   full clearance. */
+[data-runtime="pwa-installed"],
+[data-runtime="native-ios"] {
+  --safe-area-inset-bottom: min(env(safe-area-inset-bottom, 0px), 1.5rem);
+  --spacing-safe-bottom: min(env(safe-area-inset-bottom, 0px), 1.5rem);
+}
+
+/* Android PWA reports env(safe-area-inset-top)=0 (the WebView sits below
+   the OS status bar, no notch under content), so top chrome — the chat
+   header, onboarding headers — hugs the status bar with no breathing room.
+   Floor the top inset to a small gap. The max() is a NO-OP on iOS PWA,
+   which reports a real ~47px notch inset (47px > the floor), so only
+   Android picks up the padding. */
+[data-runtime="pwa-installed"] {
+  --safe-area-inset-top: max(env(safe-area-inset-top, 0px), 0.75rem);
+  --spacing-safe-top: max(env(safe-area-inset-top, 0px), 0.75rem);
+}
+
+/* Viewport height that actually fills the WebView.
+ *
+ * iOS PWA standalone with `viewport-fit=cover` + `black-translucent`
+ * makes the WebView extend under the status-bar zone (47pt on a notched
+ * iPhone), BUT `window.innerHeight` / `100dvh` still report the smaller
+ * "layout viewport" that EXCLUDES that zone — so `h-dvh` containers
+ * fall 47pt short of the WebView's actual bottom, leaving an ugly
+ * band of body bg below the TabBar / composer. (Diagnostic on a 14
+ * showed innerH=797 against a 844-tall WebView; envTop=47 matched the
+ * deficit exactly.)
+ *
+ * `--viewport-h` adds the missing top inset back ONLY on PWA-installed,
+ * where the quirk applies. Native iOS (Capacitor) and Android PWA
+ * don't have it: native reports innerH correctly, Android env-top is 0
+ * — so the default stays `100dvh` and we never double-count.
+ *
+ * Consumers: AppShell.tsx, LoginScreen, ProfileSetupScreen,
+ * AddContactScreen, CreateGroupScreen, ShareTargetScreen. Use as
+ * `h-(--viewport-h)` / `min-h-(--viewport-h)`.
+ */
+:root {
+  --viewport-h: 100dvh;
+}
+[data-runtime="pwa-installed"] {
+  /* `lvh` (large viewport height) is the stable MAX height of the
+   * visual viewport — it doesn't shift when content overflows the
+   * layout viewport the way `dvh` does, so it dodges the iOS PWA
+   * feedback loop where `100dvh` started small (= layout viewport,
+   * excluding the status-bar zone) and then grew once we forced the
+   * shell taller, causing repeated overshoots. */
+  --viewport-h: 100lvh;
+}
+
+/* ── Web-only viewport lock (source-app port) ────────────────────────
+ *
+ * Like-for-like port of the source app's `+html.tsx` web layout
+ * (~/src/wurld/app/+html.tsx::responsiveBackground), paired with the
+ * keyboard handler in lib/keyboardInset.ts.
+ *
+ * The pattern:
+ *   html  — locked to the viewport, no scroll.
+ *   body  — `position: fixed`, fills the viewport, no scroll. The
+ *           keyboard handler shrinks `body.height` to
+ *           `visualViewport.height` on focus, so any flex column
+ *           inside body shrinks with it.
+ *   #root — flex column at 100% height. Whatever fills #root (the
+ *           AppShell / focused screen) inherits the shrunken height
+ *           naturally and pushes the composer above the keyboard
+ *           without per-screen JS.
+ *
+ * Scoped to web/PWA (`[data-runtime]` excludes `native-*`). On
+ * native we continue using the Capacitor Keyboard plugin's
+ * keyboardWillShow event + .pb-keyboard padding, which is what's
+ * reportedly working on Android native today and on iOS native.
+ *
+ * The previous attempt put `position: fixed` only on body and not
+ * on html, without also driving body.height from visualViewport.
+ * That broke iOS PWA's home-screen nav bar + composer height.
+ * The fix is the full pattern: html locked, body locked + shrunk,
+ * flex layout downstream.
+ */
+/* PWA-installed (no browser chrome) → 100lvh = full WebView height.
+ * On iOS PWA standalone, 100dvh resolves to a smaller value than
+ * 100lvh (verified on-device: 100dvh=797 vs 100lvh=844 on iPhone
+ * notched) — using dvh here leaves a 47px gap above body where the
+ * status-bar zone shows the browser default. lvh matches the WebView.
+ *
+ * `position: fixed; inset: 0` (the ImageViewer pattern) was tried as
+ * an alternative — it sizes from the initial containing block, which
+ * on iOS PWA equals the LAYOUT viewport (797, excluding the status-bar
+ * zone) rather than the WebView (844), so it ends up the same height
+ * as 100dvh and leaves the same gap. lvh is the only thing that fills
+ * the full WebView on iOS PWA standalone.
+ *
+ * `!important` defends against any inline `height` ending up on body
+ * (an earlier iteration of keyboardInset.ts set `body.style.height`
+ * directly, and old service-worker bundles can still ship that code).
+ */
+[data-runtime="pwa-installed"] html,
+[data-runtime="pwa-installed"] body {
+  height: 100lvh !important;
+  overflow: hidden;
+}
+/* Browser tab / PWA-tab → 100dvh tracks the visible viewport as
+ * the browser's toolbar shows/hides. lvh would overflow whenever
+ * the toolbar is up. */
+[data-runtime="browser"] html,
+[data-runtime="browser"] body,
+[data-runtime="pwa-tab"] html,
+[data-runtime="pwa-tab"] body {
+  height: 100dvh;
+  overflow: hidden;
+}
+[data-runtime="browser"] #root,
+[data-runtime="pwa-tab"] #root,
+[data-runtime="pwa-installed"] #root {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+}
+
+/* iOS PWA pagination flash fix.
+ *
+ * On iOS Safari standalone (PWA-installed), prepending ~50 messages
+ * worth of DOM above the viewport during `loadOlder` causes WebKit
+ * to re-rasterise the scroll container's compositor layer — every
+ * bubble currently on-screen visibly flickers/fades as the layer
+ * rebuilds. Does NOT reproduce in Capacitor's WKWebView, Chromium,
+ * or any other WebKit context tested; specific to Safari's PWA
+ * compositor heuristics.
+ *
+ * `translate3d(0,0,0)` forces each bubble wrapper onto its own
+ * compositor layer (a long-standing iOS Safari trick — `contain` /
+ * `will-change` are weaker hints and weren't enough here). Once
+ * bubbles live in their own layers, the scroller's layer
+ * invalidation can't co-invalidate them: only the empty scroll
+ * background gets re-rasterised, and that's invisible.
+ *
+ * Cost: one composited layer per bubble in the DOM (texture
+ * memory). For a chat with 100s of bubbles this is noticeable but
+ * tolerable on modern iOS devices; bounded by `useMessages`'s page
+ * window which keeps DOM size in check. Re-evaluate if we move to
+ * unbounded message history.
+ *
+ * Scoped to `pwa-installed`. Targets bubble wrappers by their
+ * `data-message-id` attribute (set on each Row in ChatScroll.tsx, the
+ * direct children of the `chat-scroller` flex container); system items
+ * (id prefix `__`, loader / date separator) get the rule too —
+ * harmless and avoids attribute negation selectors.
+ *
+ * Re-pointed 2026-06-19 from the old `bubble-stack` container (deleted with
+ * the BubbleStack prototype) — the selector had silently gone dormant when
+ * production moved to `chat-scroller`, so this mitigation had not been
+ * applied in shipped builds for a while. Worth re-confirming ON DEVICE that
+ * per-bubble layer promotion behaves on the live column-reverse scroller;
+ * if it ever regresses scroll, a single layer on the scroller (or
+ * `content-visibility`) may be safer than a layer per bubble.
+ *
+ * EXCLUDES the long-press lifted row via `:not(:has([data-lifted]))`
+ * (MessageItem stamps `data-lifted` on its root while the actions menu is
+ * open). `translate3d` establishes a containing block + stacking context for
+ * `position: fixed`, so once this rule went live again (06-19 re-point) it
+ * TRAPPED the long-press lifted bubble: painted BEHIND the actions-menu
+ * backdrop and resolving its fixed coords against the row, so it landed low on
+ * screen — PWA-only, which is why web never showed it (RXN-MENU-3.1). Dropping
+ * the trick on just the lifted row lets its fixed bubble escape to the viewport
+ * again; every other row keeps its compositor layer, so the flash mitigation
+ * is untouched. No remount, so no image-reload flash or position stutter. */
+[data-runtime="pwa-installed"] [data-testid="chat-scroller"] > [data-message-id]:not(:has([data-lifted])) {
+  transform: translate3d(0, 0, 0);
+}
+
+/* ReviewDock bottom-seam fix.
+ *
+ * The 10px bottom gutter (chatscroll-bottom-gutter) sits between the
+ * scroller's visual-bottom item and the composer. Normally it's
+ * transparent and shows the chat surface (bg-(--color-bg)) as breathing
+ * room above the composer. But when the ReviewDock is up it's the dock
+ * (bg-elevated) that sits directly above the gutter, so the transparent
+ * gutter shows a dark chat-surface sliver between the elevated dock and
+ * the elevated composer. Repaint the gutter to bg-elevated ONLY while the
+ * dock is present (it renders [data-testid="ReviewDock"] iff a pending
+ * review exists), so the dock→composer seam is seamless and normal chat
+ * keeps its chat-surface gutter. Same `:has()` idiom as the lifted-row
+ * rule above; supported on every deploy-target WebView. */
+/* COMP-KB-24 — the chat list is never resized for the composer or the
+ * keyboard: the bottom slot overlays it and the list carries the slot's
+ * height as bottom padding. In a column-reverse list a growing bottom padding
+ * lifts the content by the same amount with scrollTop untouched (SCROLL-INV-4).
+ * COMP-KB-6.4 — while a drag-dismissal's finger is still down the padding
+ * HOLDS (`data-kb-hold`), and on lift it settles over 250ms
+ * (`data-kb-release`). Scoped to the chat body, so no other scroller is
+ * affected. */
+[data-telem="msg-list"] [data-testid="chat-scroller"] {
+  padding-bottom: var(--chat-bottom-h, 0px);
+}
+[data-kb-hold] [data-telem="msg-list"] [data-testid="chat-scroller"] {
+  padding-bottom: var(--chat-bottom-hold, var(--chat-bottom-h, 0px));
+}
+[data-kb-release] [data-telem="msg-list"] [data-testid="chat-scroller"] {
+  transition: padding-bottom 250ms cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+[data-testid="chat-scroller"]:has([data-testid="ReviewDock"]) [data-testid="chatscroll-bottom-gutter"] {
+  background: var(--color-bg-elevated);
+}
+
+/* Window Controls Overlay (Chromium desktop PWA).
+ *
+ * When the manifest declares `display_override: ["window-controls-overlay"]`
+ * AND the installed-PWA window has WCO active, Chromium collapses the
+ * native titlebar and lets our WebView paint edge-to-edge. The OS
+ * window-control buttons (close/min/max on Windows + Linux, traffic-
+ * lights on macOS) are overlaid by the OS on specific rectangles of
+ * the WebView, and `env(titlebar-area-*)` exposes the SAFE rectangle
+ * between them (where it's OK to paint app chrome + click without
+ * eating the OS buttons).
+ *
+ *   titlebar-area-x      — left edge of the safe titlebar zone
+ *   titlebar-area-width  — width of the safe zone (between OS buttons)
+ *   titlebar-area-height — height of the OS titlebar (~32px)
+ *   titlebar-area-y      — typically 0
+ *
+ * What this block does:
+ *  - Bumps `--safe-area-inset-top` so any header using `pt-safe-top`
+ *    clears the OS button row vertically.
+ *  - Bumps `--safe-area-inset-left/right` to the OS-button widths so
+ *    headers using `pl-safe-left` / `pr-safe-right` don't sit under
+ *    them. (macOS: left inset; Windows: right inset.)
+ *  - Makes the header row draggable via `-webkit-app-region: drag`,
+ *    with interactive elements opting back to `no-drag` so taps still
+ *    register.
+ *
+ * Scoped to `(display-mode: window-controls-overlay)` so a desktop PWA
+ * launched without WCO (Chromium older than v100, Safari, Firefox)
+ * keeps the existing standalone behaviour. The CSS env() values fall
+ * back to 0 in non-WCO contexts, but the media query is the cleaner
+ * gate.
+ */
+@media (display-mode: window-controls-overlay) {
+  :root {
+    --safe-area-inset-top: max(
+      env(safe-area-inset-top, 0px),
+      env(titlebar-area-height, 0px)
+    );
+    --spacing-safe-top: max(
+      env(safe-area-inset-top, 0px),
+      env(titlebar-area-height, 0px)
+    );
+    --safe-area-inset-left: max(
+      env(safe-area-inset-left, 0px),
+      env(titlebar-area-x, 0px)
+    );
+    --spacing-safe-left: max(
+      env(safe-area-inset-left, 0px),
+      env(titlebar-area-x, 0px)
+    );
+    --safe-area-inset-right: max(
+      env(safe-area-inset-right, 0px),
+      calc(100vw - env(titlebar-area-x, 0px) - env(titlebar-area-width, 100vw))
+    );
+    --spacing-safe-right: max(
+      env(safe-area-inset-right, 0px),
+      calc(100vw - env(titlebar-area-x, 0px) - env(titlebar-area-width, 100vw))
+    );
+  }
+  /* Mark any header with `data-bottom-chrome` OR `data-app-titlebar`
+     as a window-drag region. Interactive elements inside opt back to
+     `no-drag` so click/tap targets continue to work. */
+  [data-app-titlebar] {
+    -webkit-app-region: drag;
+    app-region: drag;
+  }
+  [data-app-titlebar] button,
+  [data-app-titlebar] a,
+  [data-app-titlebar] input,
+  [data-app-titlebar] [role='button'] {
+    -webkit-app-region: no-drag;
+    app-region: no-drag;
+  }
+}
+
+/* Dark theme overrides — applied when <html data-theme="dark">. */
+[data-theme="dark"] {
+  --color-bg: #11101a;
+  --color-bg-elevated: #1a1928;
+  --color-bg-hover: #232234;
+  --color-border: #2a293e;
+  --color-border-strong: #3a3854;
+
+  --color-fg: #f5f6f8;
+  --color-fg-muted: #a0a4af;
+  --color-fg-subtle: #6b7180;
+  --color-fg-inverse: #111111;
+
+  /* THEME-1 (dark): lighter orchid for contrast on the dark page. */
+  --color-accent: #c584ec;
+  --color-accent-fg: #ffffff;
+  --color-accent-hover: #d29df3;
+  --color-accent-strong: #a03ad6;
+
+  /* Dark-mode bubbles: distinct shades so mine vs theirs reads at a glance.
+     Mine is a dark brand-aligned purple (sits in the same hue family as
+     the brand gradient start #7340f5, darkened for bubble weight); theirs
+     uses the elevated-surface grey so it lifts off the page bg without
+     competing with mine. 2026-06-20: nudged more saturated for visual pop. */
+  /* 2026-07 (v2.1): dark mode gets a PROPORTIONALLY-moved value, NOT the bright
+     light-mode colour — the same per-channel ratio the light change used
+     (#6e3ea0→#7e33ac) applied to the original dark #352f58 → #3d275f, a deep
+     muted purple that keeps dark mode's subdued character. */
+  /* THEME-2 (dark): orchid hue at the old dark bubble's brightness, so it
+     does not glare in a dark room. */
+  /* 2026-10-19: the owner's tuner export (THEME-9..12). */
+  --color-bubble-mine: #4d2170;
+  --gradient-bubble-mine: linear-gradient(135deg, #54247a 0%, #461e66 100%);
+  /* No lighter inset edge in dark: it read as an outline on the dark page. */
+  --shadow-bubble-mine: none;
+  --color-icon-accent: #bb8bea;
+  --color-card-border: #3a3556;
+  --color-bubble-mine-fg: #ffffff;
+  /* Lighter tint of the dark mine purple. v2.1: dialled BACK a notch
+     (was #8c5abe) for a more subtle vocab underline. (Ticks unchanged.) */
+  --color-bubble-mine-underline: rgba(255, 255, 255, 0.4);
+  /* THEME-4 (dark). */
+  --color-bubble-mine-secondary: rgba(255, 255, 255, 0.8);
+  --color-bubble-mine-meta: rgba(255, 255, 255, 0.8);
+
+  --color-bubble-theirs: #1a1928;
+  --color-bubble-theirs-fg: #f5f6f8;
+  --color-bubble-theirs-secondary: #a0a4af;
+  --color-bubble-theirs-meta: #6b7180;
+  /* A lavender just off the dark theirs-bubble bg (#1a1928); 2026-06-20 lifted
+     a notch so it reads against the near-black bubble. 2026-06-20: nudged more
+     saturated for improved readability. */
+  --color-bubble-theirs-underline: #7169ad;
+
+  /* MSG-LINK-1 — see the light block: the underline follows the text. */
+  --color-link-underline-mine: currentColor;
+  --color-link-underline-theirs: currentColor;
+
+  --color-flashcard-saved: #4ade80;
+  --color-vocab-circle-theirs: color-mix(in srgb, var(--color-accent) 12%, transparent);
+
+  /* Active pills in the same purple/lavender family, lighter+more opaque so a
+     tapped word lights up: a light-purple pill on the dark mine bubble + a
+     lavender wash on the dark theirs bubble. */
+  --color-underline-active-bg-mine: rgba(170, 155, 215, 0.92);
+  --color-underline-active-bg-theirs: rgba(140, 115, 185, 0.40);
+  /* Tapped-MINE word text — near-black, legible on the light lavender pill. */
+  --color-underline-active-fg-mine: #1a1a1a;
+
+  /* Read-receipt double-tick — pinned to its original dark-mode teal. */
+  --color-read-tick: #62c5c0;
+
+  --color-danger: #ff6679;
+  --color-success: #4ade80;
+  --color-warning: #fbbf24;
+
+  --color-scrim: rgba(0, 0, 0, 0.55);
+  --color-scrim-lift: rgba(0, 0, 0, 0.5);
+  --color-chip-selected: #1f1d30;
+  /* Dark mode: chip-muted == bg-hover; the visual contrast issue the
+     light-mode override solves doesn't exist on the dark page bg. */
+  --color-chip-muted: #232234;
+
+  color-scheme: dark;
+}
+
+/* Base layer */
+@layer base {
+  *, *::before, *::after {
+    box-sizing: border-box;
+  }
+  html, body, #root {
+    height: 100%;
+    margin: 0;
+    /* App-wide: kill the iOS / Android rubber-band overscroll. Scroll
+       containers inside the app set their own `overscroll-behavior:
+       contain` so a nested list still feels right; this just stops the
+       outer page from bouncing past the chrome — which previously made
+       the bottom nav items visibly drift when the user yanked on the
+       message list. */
+    overscroll-behavior: none;
+    /* Belt-and-braces: prevent the OS pull-to-refresh / page-zoom that
+       was firing on the message list. `touch-action: manipulation` keeps
+       taps and pans working but kills double-tap zoom and pinch zoom
+       on the chrome itself. */
+    touch-action: manipulation;
+  }
+  /* Belt-and-braces background on html so if any rendering pass paints
+   * the html element's background (e.g. a 1-2px sliver between the
+   * WebView top and body's painted box on Android PWA), it fills with
+   * the page background colour instead of the manifest theme_color
+   * (#7340f5 purple) leaking through. Tracks --color-bg so it follows
+   * light/dark + page bg changes via dynamic theme-color updates
+   * propagated through useStatusBarChrome. If the gap turns out to
+   * live OUTSIDE the WebView entirely (in the system status-bar
+   * overlay zone), this won't help — the diagnostic outcome of
+   * leaving it in tells us which side the gap is on. */
+  html {
+    background: var(--color-bg);
+  }
+  body {
+    background: var(--color-bg);
+    color: var(--color-fg);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    /* Prevent the WebView from selecting / dragging the app chrome on
+       long-press (selectable surfaces opt back in with `select-text`). */
+    -webkit-user-select: none;
+    user-select: none;
+    /* Kill the iOS/WebKit long-press CALLOUT app-wide — the native Safari
+       "peek" link/image preview + Open/Copy/Share menu that fired on any
+       long-press and read like the app had opened a browser page. It's an
+       inherited property, so setting it on body disables it for the whole
+       tree; the app's OWN long-press gestures (message bubble → explain,
+       image actions) are JS handlers and are unaffected. Any element that
+       genuinely wants the native callout opts back in with `.allow-callout`. */
+    -webkit-touch-callout: none;
+  }
+  /* Opt back into the native long-press callout for a specific element
+     (e.g. an external link you want the OS link-preview on). */
+  .allow-callout {
+    -webkit-touch-callout: default;
+  }
+  /* Kill the WebView's default tap-highlight rectangle — the translucent
+     grey box painted on touchstart with a ~300ms decay. It fires on EVERY
+     tap (tab bar items, composer buttons, list rows, bubbles) and is the
+     single most recognisable "this is a web page, not an app" tell. Every
+     interactive surface here already has its own :active feedback
+     (`active:scale-95`, colour transitions), so nothing is lost.
+
+     Universal selector, NOT `body`: the property is inherited in WebKit but
+     NOT in Blink, so setting it on body alone leaves the Android WebView —
+     where the default highlight is the most visible — completely untouched. */
+  * {
+    -webkit-tap-highlight-color: transparent;
+  }
+  /* When the ImageViewer is open, force every flex-flow element that
+     ordinarily paints the safe-area-top zone (anything tagged with
+     data-safe-top-paint) to render BLACK for the duration. iOS Safari's
+     safe-area-top compositor samples the topmost flex-flow element's
+     bg colour for the status-bar tint backdrop — it does NOT honour
+     fixed-position overlays, body bg, or html bg in that zone. Without
+     this rule the chat-info path opens the viewer over a white scroller
+     and the iOS status bar stays white even though our overlay is
+     painting black at every visible pixel. Set by useViewerChrome on
+     mount, removed on cleanup. */
+  body[data-image-viewer-open='true'] [data-safe-top-paint] {
+    background: #000 !important;
+  }
+  /* Theme-aware scrollbars. The browser defaults to OS-themed scrollbars
+     which don't follow our light/dark toggle — a dark-mode user sees the
+     OS's light-mode scrollbar against our dark page, or vice versa.
+     Two parallel rules cover the gap:
+       1. `scrollbar-color` (CSS standard) — Firefox + modern Chromium
+          (≥121) + Safari (≥17.4). Single declaration: `thumb track`.
+       2. `::-webkit-scrollbar*` pseudo-elements — older Chromium /
+          Safari + the Capacitor WebView. The native bar gets hidden
+          via `scrollbar-none` on lots of inner scrollers; this rule
+          targets the OUTER page scrollers + anywhere a child opts in.
+     Both reference the same CSS vars so light/dark theme flips
+     automatically. Thumbs use `--color-border` (subtle grey that sits
+     just above the page bg in both themes); tracks stay transparent
+     so the scrollbar overlay reads as "subtle accent on the bg" rather
+     than a chrome rail. */
+  html {
+    scrollbar-color: var(--color-border) transparent;
+    scrollbar-width: thin;
+  }
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background-color: var(--color-border);
+    border-radius: 4px;
+    /* 1px transparent border via background-clip carves a small gap
+       around the thumb so it doesn't kiss the track edges — looks
+       cleaner against both light and dark page bgs. */
+    background-clip: padding-box;
+    border: 1px solid transparent;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background-color: var(--color-fg-muted);
+    background-clip: padding-box;
+  }
+  ::-webkit-scrollbar-corner {
+    background: transparent;
+  }
+  /* iOS Safari zooms a form input on focus when its computed font-size
+     is below 16px. Bumping all controls to at least 16px on touch
+     devices prevents the zoom without resorting to
+     `user-scalable=no` (which kills accessibility zoom for everyone).
+     `font-size: max(16px, 1em)` keeps any tighter visual size while
+     guaranteeing the iOS threshold. */
+  @media (pointer: coarse) {
+    /* `!important` because this rule lives in @layer base and so loses
+     * specificity ties to Tailwind utility layers — without it, any
+     * input/textarea with `text-sm` / `text-xs` / etc. wins back its
+     * 14/12px size and iOS triggers the focus-zoom we're trying to
+     * prevent. The override is intentional and clamped to the iOS
+     * threshold; visual size larger than 16px is unaffected. */
+    input, textarea, select {
+      font-size: max(16px, 1em) !important;
+    }
+  }
+}
+
+@layer utilities {
+  .bg-gradient-accent { background: var(--gradient-accent); }
+  .text-gradient-accent {
+    background: var(--gradient-accent);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  /* Gradient border around a subtly-tinted fill, used on selected chips
+     (PronounsSection, theme chips, filter chips on CardsScreen). Fill is
+     --color-chip-selected (midway between the card surface and bg-hover)
+     so the selected state lifts without going fully grey. Inner fill is
+     painted to padding-box; the gradient is painted to border-box; a
+     transparent solid border lets the border-box layer show through. */
+  .border-gradient-accent {
+    border: 2px solid transparent;
+    background:
+      linear-gradient(var(--color-chip-selected), var(--color-chip-selected)) padding-box,
+      var(--gradient-accent) border-box;
+  }
+
+  /* Thin (1px) gradient outline over the elevated surface — used on the
+     Cards `+` FAB (CARDS-FAB-2). Surface fill (not the chip tint) so the
+     button reads as an outlined action, not a selected chip. */
+  .border-gradient-accent-thin {
+    border: 1px solid transparent;
+    background:
+      linear-gradient(var(--color-bg-elevated), var(--color-bg-elevated)) padding-box,
+      var(--gradient-accent) border-box;
+  }
+
+  /* LIFE-BUBBLE-CURRENT: highlight bubbles that belong to the current
+     turn (the live exchange the player is responding to). Same gradient-
+     border technique as .border-gradient-accent, but the inner fill
+     matches each speaker's standard bubble background so the bubble's
+     surface color stays the same — only the border swaps from grey to
+     the brand gradient. The user bubble already paints the gradient as
+     its fill, so it gets a soft outer ring instead. */
+  .life-bubble-current-npc {
+    border: 2px solid transparent;
+    background:
+      linear-gradient(var(--color-bg-elevated), var(--color-bg-elevated)) padding-box,
+      var(--gradient-accent) border-box;
+  }
+  .life-bubble-current-narrator {
+    border: 2px solid transparent;
+    background:
+      linear-gradient(var(--color-bg-hover), var(--color-bg-hover)) padding-box,
+      var(--gradient-accent) border-box;
+  }
+  /* LIFE-BUBBLE-3: current-turn user bubble = mine fill + a brand-gradient
+     BORDER with a GAP between the fill and the border (so "new" reads clearly).
+     All on the element (no pseudo / z-index), so it scales cleanly with the
+     drag-flip transform. Layers, outer→inner: the 2px `border` shows the
+     gradient (border-box); the `padding-box` gradient paints the mine fill; and
+     an `inset` box-shadow lays a 2px `--color-bg` ring just inside the border —
+     THAT is the gap. Second shadow preserves the bubble's soft drop shadow.
+     Result out-from-fill: mine → 2px gap → 2px gradient border. */
+  .life-bubble-current-user {
+    border: 2px solid transparent;
+    background:
+      linear-gradient(var(--color-bubble-mine), var(--color-bubble-mine)) padding-box,
+      var(--gradient-accent) border-box;
+    box-shadow:
+      inset 0 0 0 2px var(--color-bg),
+      0 1px 2px 0 rgb(0 0 0 / 0.05);
+  }
+
+  /* Shimmer for the "Translating…" inline label. Inherits the parent's
+     text color via `currentColor` — we use `-webkit-text-fill-color`
+     (not `color`) to hide the text fill so the gradient shows through
+     the text shape. Setting `color: transparent` here would also collapse
+     `currentColor` to transparent and the gradient would render
+     invisible. (WebKit + Blink WebViews support
+     -webkit-text-fill-color; non-WebKit browsers will show the unstyled
+     text color, which is the right fallback.) */
+  .text-shimmer {
+    background: linear-gradient(135deg, currentColor, color-mix(in srgb, currentColor 40%, transparent), currentColor);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-size: 200% 100%;
+    animation: shimmerGradient 2s linear infinite;
+  }
+
+  /* MSG-BUBBLE-8.2 — a bubble makes space for itself and SLIDES UP into it.
+
+     Two animations with different durations, which is what makes it read as
+     arriving rather than growing:
+       - the WRAPPER's row goes `0fr -> 1fr` over the SHORTER duration, opening
+         the gap and easing the messages above upward;
+       - the BUBBLE translates from one full height below its resting place to
+         zero over the FULL duration, so it is still travelling after the gap
+         has finished opening.
+     Equal durations put the bubble's top exactly at the gap's bottom edge for
+     the whole animation — it is then never visible until the very end, which
+     is the "grows from zero in the space" reading rather than sliding into it.
+
+     The wrapper deliberately does NOT clip. The bubble starts below the list's
+     end and is clipped by the SCROLLER's own bottom edge instead, so it
+     emerges from beneath the composer rather than unrolling inside a box. */
+  .bubble-enter-grow {
+    display: grid;
+    grid-template-rows: 1fr;
+    animation: bubbleEnterGrow var(--bubble-enter-gap-ms, 240ms) ease-out 1 forwards;
+  }
+  .bubble-enter-grow > * {
+    min-height: 0;
+    /* MSG-BUBBLE-8.6 — equally CRITICAL, and in the other axis: a grid item's
+       `min-width: auto` resolves to its MIN-CONTENT size, so this wrapper (a
+       vertical-only device) would silently put a min-content floor under the
+       bubble that the plain <div> a settled bubble sits in does not. Any row
+       with a large min-content — a `truncate`d reply quote, whose nowrap
+       min-content is the entire quote — then blew straight past the frame's
+       max-w-[80%] and off the screen. And it PERSISTED: `animateEnter` is
+       captured once per instance, so the class stays for the bubble's whole
+       lifetime, meaning every live-sent/received message was affected while the
+       same message re-read from scrollback rendered fine. */
+    min-width: 0;
+    /* CRITICAL: a grid item defaults to `align-self: stretch`, so the 0fr
+       track would size the BUBBLE rather than just the gap — measured, the
+       bubble's own height ran 16px -> 54px, which is the grow this exists to
+       replace. `start` lets it keep its natural height and overflow the track
+       downward, where the scroller clips it. The track then animates the GAP
+       alone and the bubble only ever translates. */
+    align-self: start;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .bubble-enter-grow {
+      animation: none;
+    }
+  }
+
+  /* TYPING-5 — the indicator's exit: the reverse of `bubble-enter-grow`.
+     The gap it opened closes again, so the rows above settle back down as it
+     leaves rather than the row vanishing and everything snapping. Same
+     `align-self: start` rule as the entrance and for the same reason: a grid
+     item defaults to `stretch`, which would size the BUBBLE to the collapsing
+     track instead of just closing the gap. */
+  .bubble-exit-shrink {
+    display: grid;
+    grid-template-rows: 1fr;
+    animation: bubbleExitShrink var(--bubble-enter-gap-ms, 240ms) ease-in 1 forwards;
+  }
+  .bubble-exit-shrink > * {
+    min-height: 0;
+    /* MSG-BUBBLE-8.6 — same min-content floor as the entrance wrapper; see the
+       comment on `.bubble-enter-grow > *`. This wrapper is short-lived, but the
+       floor would still snap the row wide for the length of the exit. */
+    min-width: 0;
+    align-self: start;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .bubble-exit-shrink {
+      animation: none;
+    }
+  }
+
+  /* MSG-BUBBLE-9 — the arrival REVEAL.
+
+     An arrival cue exists at all because removing the in-flight indicator
+     (MSG-BUBBLE-6) removed the only signal that the text CHANGED. Two rows
+     announce the change by growing a second line; one row swaps its content
+     in place, which is easy to miss entirely.
+
+     This replaces the highlight-band sweep that used to do that job. Instead
+     of animating over finished text, the new text is masked out ahead of a
+     leading edge and wipes in left-to-right, while the text it replaces sits
+     underneath and retreats behind the same edge — so the sentence reads as
+     being converted in place rather than swapped out.
+
+     ⚠ Unlike the sweep, this does NOT use `-webkit-text-fill-color:
+     transparent`, so the invisible-text hazard that rule carried is gone: a
+     mask that fails to animate leaves text fully masked-IN (`forwards` holds
+     position 0%, the fully-revealed end), not fully transparent.
+
+     Mask-position rather than an animated custom property: `@property`
+     registration is needed to interpolate a bare `--var`, whereas animating a
+     background/mask POSITION is the same technique the sweep this replaces
+     used, so it is already proven on these WebViews. The mask is 250% of the element, opaque
+     across its left 40% with a soft edge to 55%:
+       position 100% -> the opaque part hangs off to the LEFT, element hidden
+       position   0% -> the opaque part covers the whole element, fully shown */
+  .text-reveal {
+    -webkit-mask-image: linear-gradient(
+      90deg,
+      #000 0%,
+      #000 40%,
+      rgba(0, 0, 0, 0) 55%,
+      rgba(0, 0, 0, 0) 100%
+    );
+    mask-image: linear-gradient(
+      90deg,
+      #000 0%,
+      #000 40%,
+      rgba(0, 0, 0, 0) 55%,
+      rgba(0, 0, 0, 0) 100%
+    );
+    -webkit-mask-size: 250% 100%;
+    mask-size: 250% 100%;
+    -webkit-mask-repeat: no-repeat;
+    mask-repeat: no-repeat;
+    animation: textRevealPass 0.85s ease-out 1 forwards;
+  }
+
+  /* The outgoing text, pinned underneath the incoming one. Carries the
+     COMPLEMENTARY mask so it is visible exactly where the new text is not:
+     the two edges track each other and the old glyphs are never showing
+     through the new ones. `aria-hidden` at the call site — this is a duplicate
+     of text the reader has already had. */
+  .text-reveal-under {
+    -webkit-mask-image: linear-gradient(
+      90deg,
+      rgba(0, 0, 0, 0) 0%,
+      rgba(0, 0, 0, 0) 40%,
+      #000 55%,
+      #000 100%
+    );
+    mask-image: linear-gradient(
+      90deg,
+      rgba(0, 0, 0, 0) 0%,
+      rgba(0, 0, 0, 0) 40%,
+      #000 55%,
+      #000 100%
+    );
+    -webkit-mask-size: 250% 100%;
+    mask-size: 250% 100%;
+    -webkit-mask-repeat: no-repeat;
+    mask-repeat: no-repeat;
+    animation: textRevealPass 0.85s ease-out 1 forwards;
+  }
+
+  /* MSG-BUBBLE-9.2 — RTL. Same construction mirrored: the gradient runs 270deg
+     so its opaque end is on the RIGHT, and the position animation runs 0% ->
+     100% instead of 100% -> 0%. The edge then travels right-to-left, WITH the
+     reading direction of the text being revealed. Chosen by the row's resolved
+     `dirOf(text)`, not the app locale — a French speaker practising Arabic
+     gets an LTR original and an RTL translation in the same bubble. */
+  .text-reveal-rtl {
+    -webkit-mask-image: linear-gradient(
+      270deg,
+      #000 0%,
+      #000 40%,
+      rgba(0, 0, 0, 0) 55%,
+      rgba(0, 0, 0, 0) 100%
+    );
+    mask-image: linear-gradient(
+      270deg,
+      #000 0%,
+      #000 40%,
+      rgba(0, 0, 0, 0) 55%,
+      rgba(0, 0, 0, 0) 100%
+    );
+    -webkit-mask-size: 250% 100%;
+    mask-size: 250% 100%;
+    -webkit-mask-repeat: no-repeat;
+    mask-repeat: no-repeat;
+    animation: textRevealPassRtl 0.85s ease-out 1 forwards;
+  }
+
+  .text-reveal-under-rtl {
+    -webkit-mask-image: linear-gradient(
+      270deg,
+      rgba(0, 0, 0, 0) 0%,
+      rgba(0, 0, 0, 0) 40%,
+      #000 55%,
+      #000 100%
+    );
+    mask-image: linear-gradient(
+      270deg,
+      rgba(0, 0, 0, 0) 0%,
+      rgba(0, 0, 0, 0) 40%,
+      #000 55%,
+      #000 100%
+    );
+    -webkit-mask-size: 250% 100%;
+    mask-size: 250% 100%;
+    -webkit-mask-repeat: no-repeat;
+    mask-repeat: no-repeat;
+    animation: textRevealPassRtl 0.85s ease-out 1 forwards;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    /* Drop the mask entirely rather than just the animation: a paused mask
+       would leave the new text permanently half-wiped. */
+    .text-reveal,
+    .text-reveal-rtl {
+      animation: none;
+      -webkit-mask-image: none;
+      mask-image: none;
+    }
+    /* The underlay has no job without motion — the new text is simply there. */
+    .text-reveal-under,
+    .text-reveal-under-rtl {
+      display: none;
+    }
+  }
+
+
+  /* Block-level skeleton shimmer — used as a placeholder for streaming
+     content (LessonIntro PRACTICE-PLAN-41). A moving gradient over a
+     low-opacity foreground tint reads as clearly animated on both
+     light and dark themes; Tailwind's `bg-(--color-bg-elevated)` token
+     alone has near-zero contrast against the body bg in dark mode and
+     `animate-pulse` only modulates opacity, so the standard recipe
+     leaves the skeleton invisible. Add it to any block element. */
+  .skeleton-block {
+    background: linear-gradient(
+      90deg,
+      color-mix(in srgb, var(--color-fg-muted) 10%, transparent),
+      color-mix(in srgb, var(--color-fg-muted) 30%, transparent),
+      color-mix(in srgb, var(--color-fg-muted) 10%, transparent)
+    );
+    background-size: 200% 100%;
+    animation: shimmerGradient 1.8s linear infinite;
+    border-radius: 0.375rem;
+  }
+
+  /* LIFE-UI-12 — a skeleton OPTION BOX in the wurlds action bar. Same
+     moving-gradient recipe as `.skeleton-block` (see above for why
+     `animate-pulse` over `bg-elevated` is invisible in dark mode), but shaped
+     like the chip it stands in for: the chip's `rounded-2xl` radius and its
+     1px border, so the border-box height matches the real chip's exactly.
+     HEIGHT IS NEVER SET HERE — it comes from `OPTION_CHIP_SKELETON_H`
+     (optionRowMetrics.ts), which is the same number the real chip floors at.
+     A height here would be a second source of truth and the block could drift
+     back to changing size on the swap. */
+  .skeleton-chip {
+    background: linear-gradient(
+      90deg,
+      color-mix(in srgb, var(--color-fg-muted) 8%, transparent),
+      color-mix(in srgb, var(--color-fg-muted) 24%, transparent),
+      color-mix(in srgb, var(--color-fg-muted) 8%, transparent)
+    );
+    background-size: 200% 100%;
+    animation: shimmerGradient 1.8s linear infinite;
+    border: 1px solid var(--color-border);
+    border-radius: 1rem;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .skeleton-chip {
+      animation: none;
+    }
+  }
+
+  /* LIFE-BACKDROP-7 "Building your wurld…" veil — a soft diagonal sheen that
+     sweeps across the fallback silhouette so a fresh world reads as LOADING,
+     not a finished scene. Low opacity keeps the silhouette visible through it;
+     the moving highlight is the "still generating" signal. */
+  .life-scene-building {
+    background: linear-gradient(
+      100deg,
+      transparent 30%,
+      color-mix(in srgb, var(--color-fg-muted) 9%, transparent) 50%,
+      transparent 70%
+    );
+    background-size: 250% 100%;
+    /* LIFE-BACKDROP-19 — its OWN keyframe, because the shared `shimmerGradient`
+       does not tile evenly at this size and the loop visibly snapped once per
+       cycle ("a sudden animation restart glitch once per cycle", owner
+       2026-08-01).
+
+       A percentage `background-position` resolves against
+       (container − image), not against the container, so the distance a given
+       ΔP travels depends on `background-size`. With size S (in container
+       widths) the travel is ΔP/100 × (S − 1) container widths, and the loop is
+       seamless only when that is a whole number of TILES (S wide):
+
+           ΔP/100 × (S − 1) / S  ∈  ℤ
+
+       S = 2 → ΔP = 400 gives exactly 2 tiles, which is why every 200% shimmer
+       in this file loops cleanly on the shared keyframe. S = 2.5 → ΔP = 400
+       gives 2.4 tiles, so the last 0.4 of a tile was discarded on every wrap.
+       ΔP = 500 is 3 tiles exactly. */
+    /* 2.4s -> 4.5s (owner, 2026-08-01: "shimmer on a building wurld scene is
+       too quick"). This sweeps a full-bleed scene, not a 200px skeleton chip —
+       the same angular speed reads as urgent at that width, and the thing it
+       is signalling is a 5-8s generation the player is meant to wait calmly
+       through. Slower also suits what it now sits on: LIFE-BACKDROP-16's planet
+       is a still, drifting image, and a fast sheen fought it. */
+    animation: backdropBuildingSheen 4.5s linear infinite;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .life-scene-building {
+      animation: none;
+    }
+  }
+
+  /* LIFE-BACKDROP-15 — scene cross-fade. The incoming scene fades in OVER the
+     outgoing one, which stays painted underneath until the fade finishes, so
+     a scene swap never shows a gap or a placeholder.
+
+     360ms must stay SHORTER than `SCENE_FADE_MS` (420ms, backdropStageState.ts),
+     which is how long the outgoing layer is kept mounted. If the animation
+     outran the teardown you'd see the stage background through the
+     half-transparent new scene for the last frames.
+
+     Base opacity is 1 and the animation runs 0 -> 1, so disabling it under
+     reduced motion degrades to an instant swap, not an invisible scene. */
+  .life-scene-fade-in {
+    animation: lifeBackdropFadeIn 360ms ease-out both;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .life-scene-fade-in {
+      animation: none;
+    }
+  }
+
+  /* NAV-ANIM page-transition classes (see keyframes below). iOS-style push
+     with PARALLAX: the incoming page slides over while the outgoing page
+     recedes (forward) or slides off (back). Both pages are mounted during
+     the transition (AnimatedRoutes two-slot machine). `both` fill holds
+     the exit page's final frame until it's dropped. No `will-change`
+     (NAV-ANIM-5): these are one-shot transforms that auto-promote to a layer
+     during playback and tear it down when the animation ends.
+
+     NAV-ANIM-6 — 380ms on a curve with a real ramp-in. These four durations
+     MUST equal `PAGE_ANIM_MS` (lib/navTransition.ts), which is what times the
+     outgoing slot's removal; globals.pageAnim.test.ts asserts the pair.
+     Previously 280ms on cubic-bezier(0.32, 0.72, 0, 1) — an iOS ease so
+     front-loaded that the page was essentially in place a quarter of the way
+     in, so the transition registered as a flash instead of a push. The curve
+     below still finishes ease-out (so the page settles rather than stopping
+     dead) but starts gently, which is what makes the travel readable. */
+  .page-anim-enter-forward {
+    animation: pageEnterForward 380ms cubic-bezier(0.33, 0.1, 0.2, 1) both;
+  }
+  .page-anim-exit-forward {
+    animation: pageExitForward 380ms cubic-bezier(0.33, 0.1, 0.2, 1) both;
+  }
+  .page-anim-enter-back {
+    animation: pageEnterBack 380ms cubic-bezier(0.33, 0.1, 0.2, 1) both;
+  }
+  .page-anim-exit-back {
+    animation: pageExitBack 380ms cubic-bezier(0.33, 0.1, 0.2, 1) both;
+  }
+  /* Accessibility: honour reduced-motion — no slide. (AnimatedRoutes also
+     skips the dual-mount under reduced-motion, doing an instant swap.) */
+  @media (prefers-reduced-motion: reduce) {
+    .page-anim-enter-forward,
+    .page-anim-exit-forward,
+    .page-anim-enter-back,
+    .page-anim-exit-back {
+      animation: none;
+    }
+  }
+
+  /* NAV-ANIM-12 — the route-slot area clips its slides. The incoming slot
+     starts at translateX(100%), inside its ancestors' scrollable overflow; a
+     page that focuses a field on mount (autoFocus on /contacts/add) made the
+     browser scroll #root (overflow:hidden, still programmatically scrollable)
+     sideways to reveal it — the new page appeared at once, the old one left
+     early, and both snapped back when the slide settled. `clip` takes the
+     overflow out of every ancestor's scroll range without becoming a scroll
+     container, a stacking context or a fixed-position containing block, so the
+     lifted bubble (RXN-MENU-3.1) and the desktop chrome order (UI-DESKTOP-9)
+     are unaffected. `hidden` is the fallback where `clip` is unsupported;
+     AnimatedRoutes resets any scroll of this element in that case. */
+  .nav-slots {
+    overflow: hidden;
+    overflow: clip;
+  }
+
+  /**
+   * Pads the bottom by max(keyboard inset, safe-area inset). Apply to
+   * any bottom-anchored container/element that needs to clear the OS
+   * keyboard when open and the home indicator / nav-bar when closed.
+   *
+   * --kb-h is set from Capacitor's keyboardWillShow event in
+   * lib/keyboardInset.ts (one-shot to the final keyboard height when the
+   * OS animation starts). The transition interpolates the padding over
+   * the OS keyboard animation duration (~250ms), using the iOS standard
+   * easing curve which also reads well on Android.
+   *
+   * env(keyboard-inset-height) is included as a fallback for future
+   * platforms that ship the Chromium VirtualKeyboard API. env(safe-area-
+   * inset-bottom) is the home-indicator inset which kicks in when the
+   * keyboard is closed.
+   */
+  /* Hide scrollbars on overflow containers while keeping scroll behavior.
+     Used for horizontal reaction strips where a scrollbar is a visual
+     distraction and the fade-edge mask is the scroll affordance. */
+  /* UI-DESKTOP-7 — the page reading measure.
+   *
+   * Replaces the `w-full max-w-md mx-auto` that every tab destination was
+   * hard-coding. On phones it IS that chain, byte for byte (28rem = max-w-md),
+   * so nothing below `lg` moves. At `lg` and up it opens to 64rem: with the
+   * NavRail costing 56px and the chat-list sidebar no longer rendering off
+   * the chat section (UI-DESKTOP-6), those screens now have ~1380px to work
+   * with, and a 448px column stranded in the middle of it was the "content
+   * doesn't use the width" complaint.
+   *
+   * A utility rather than a per-screen class chain because the widths have to
+   * agree: a header on one measure and a list on another reads as a
+   * misalignment bug, and that is exactly what happens when 34 files each
+   * carry their own copy of the number.
+   *
+   * NOT applied to: modals and sheets (sized to their content), the life-sim
+   * scene overlays (deliberately narrow — they sit over artwork and read as
+   * dialogue), or onboarding (a single-column form is correct at any width). */
+  .page-measure {
+    width: 100%;
+    margin-inline: auto;
+    max-width: 28rem;
+  }
+  @media (width >= 64rem) {
+    .page-measure {
+      max-width: 64rem;
+    }
+  }
+
+  .scrollbar-none {
+    scrollbar-width: none;
+  }
+  .scrollbar-none::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* COMP-IMG-5 — the BottomSheet's height cap, keyboard-aware.
+   *
+   * 85dvh normally; with the keyboard up the sheet may grow by the keyboard's
+   * height, capped at the viewport. The keyboard does not shrink the layout
+   * viewport, so a sheet that pads itself by `--kb-h` loses that height from
+   * its CONTENT — this gives it back. For a sheet whose whole life is spent
+   * with the keyboard up, prefer the kb-lift utility below. */
+  .max-h-sheet {
+    max-height: min(calc(85dvh + var(--kb-h, 0px)), 100dvh);
+  }
+
+  /* COMP-KB-21 — a sheet that does NOT compensate for the keyboard at all.
+   *
+   * Two compensations were tried before this and both were wrong for a sheet
+   * whose only input sits at the TOP of its own box:
+   *
+   *   `.pb-keyboard` pins the sheet to the viewport bottom — BEHIND the
+   *   keyboard — and pads `--kb-h` of empty background over its lower half.
+   *   That padding is a real box that participates in flex sizing, so
+   *   whichever child is `flex-1 min-h-0` pays for it: the picker's list
+   *   collapsed and the sheet read as "padding painted over the modal".
+   *
+   *   `.kb-lift` (removed) then moved the sheet's bottom EDGE up by `--kb-h`.
+   *   On a platform that already shrinks the viewport for the keyboard that
+   *   is a SECOND compensation on top of the platform's own, and the sheet
+   *   floats a keyboard-height above where it belongs — a band of background
+   *   between the sheet and the keyboard. Owner report, 2026-07-31.
+   *
+   * The picker's search field is the first thing in the sheet, so it is
+   * clear of the keyboard with no compensation whatsoever; the list below it
+   * scrolls, and the keyboard covering part of a scrollable list is ordinary
+   * behaviour rather than a bug to correct.
+   *
+   * Consumers using this MUST NOT also carry `.pb-keyboard` or `.max-h-sheet`
+   * — both reintroduce a `--kb-h` term, which is the one thing this mode
+   * exists to have none of. */
+  .kb-none {
+    /* A DEFINITE height, not a max-height, and that distinction is
+     * load-bearing. A sheet whose list is `flex-1 min-h-0` needs a definite
+     * height to distribute: under `max-height` alone the flex container
+     * content-sizes first and only then clamps, so the list resolved to its
+     * `flex-basis: 0` hypothetical size and came out ONE PIXEL tall.
+     *
+     * Also carries the cap itself rather than composing with `.max-h-sheet`:
+     * both would size the same box, and which one won would depend on source
+     * order in the stylesheet, not on the order the classes are written. */
+    height: 85dvh;
+    /* Safe-area ONLY — no `--kb-h` term anywhere in this rule. That is the
+     * whole point of the mode: the home-indicator inset is a real thing to
+     * clear, the keyboard is not. */
+    padding-bottom: max(
+      var(--safe-area-inset-bottom, env(safe-area-inset-bottom, 0px)),
+      0.5rem
+    );
+  }
+
+  .pb-keyboard {
+    /* Effective bottom padding has two regimes:
+     *
+     *   Keyboard OPEN  — pad by (keyboard height + 0.25rem gutter).
+     *     The home-indicator safe-area inset is intentionally NOT added:
+     *     when the OS keyboard is up it physically covers the home
+     *     indicator, so reserving space for the indicator on top of the
+     *     keyboard height just lifts the composer needlessly far from
+     *     the keyboard's top edge. A SMALL 0.25rem seam keeps the
+     *     composer snug against the keyboard (COMP-KB-3) — it was 0.5rem,
+     *     which read as too much dead space with the keyboard up.
+     *
+     *   Keyboard CLOSED — pad by max(safe-area-inset-bottom, 0.5rem).
+     *     The home indicator is exposed again, so we restore the inset
+     *     so the composer (or any bottom-anchored row using this util)
+     *     doesn't sit underneath it. The 0.5rem floor keeps a small
+     *     gutter on devices with no inset (Android emulator etc.).
+     *
+     * The max(...) expression collapses to those two regimes without a
+     * branch: (kb-h + 0.25rem) wins when kb-h is large (keyboard up),
+     * safe-area-inset wins when kb-h is 0 (keyboard down). The keyboard-up
+     * gutter (0.25rem) is deliberately tighter than the keyboard-down
+     * floor (0.5rem) — the floor only matters with no keyboard covering
+     * the bottom.
+     *
+     * `--kb-h` is the SINGLE source for the keyboard term (COMP-KB-15): the
+     * controller in lib/keyboardController.ts writes it from whichever
+     * authoritative source the runtime offers — Capacitor keyboard events on
+     * native, `navigator.virtualKeyboard`'s `geometrychange` on Chromium,
+     * focus-gated visualViewport math elsewhere.
+     *
+     * `env(keyboard-inset-height)` used to sit alongside `--kb-h` inside this
+     * max() as a "future platforms" fallback. It was REMOVED because it is a
+     * second writer that no JS path can zero: COMP-KB-16's focus gate and
+     * COMP-KB-19's resets govern `--kb-h` only, so on Chromium (where
+     * `interactive-widget=overlays-content` + `virtualKeyboard.overlaysContent`
+     * populate the env var) this padding could stay hundreds of px tall while
+     * `--kb-h` was 0px and `kb.visible` was false — the TabBar would come back
+     * while the composer kept its keyboard-sized gap. Chromium is precedence-2
+     * in COMP-KB-15 and feeds `--kb-h` directly, so nothing is lost. */
+    padding-bottom: max(
+      calc(var(--kb-h, 0px) + 0.25rem),
+      var(--safe-area-inset-bottom, env(safe-area-inset-bottom, 0px)),
+      0.5rem
+    );
+    transition: padding-bottom 250ms cubic-bezier(0.32, 0.72, 0, 1);
+  }
+
+  /* COMP-IMG-6 — hands back the height `.pb-keyboard` just took from the
+   * flex column, to a sibling that must NOT pay for the keyboard.
+   *
+   * `.pb-keyboard`'s padding is a real box, and on a layout viewport that
+   * does not shrink for the keyboard (KeyboardResize.None — capacitor.
+   * config.ts) some sibling has to give up that height. In a column whose
+   * middle child is `flex-1`, that child pays all of it: the review
+   * modal's photo stage lost 332px of 648px to a 336px keyboard, which
+   * re-laid-out the photo the user was looking at.
+   *
+   * A negative bottom margin on that child shrinks its MARGIN box while
+   * flex hands the difference back to its BORDER box, so the child keeps
+   * its full rendered height and simply extends UNDER the risen furniture
+   * — and everything after it in the column stays exactly where
+   * `.pb-keyboard` alone would have put it. Whatever overlaps it must
+   * therefore carry a positive z-index and an opaque background.
+   *
+   * The value is the exact negation of what `.pb-keyboard` added relative
+   * to its keyboard-down padding:
+   *
+   *   added = max(kb + 0.25rem, SA, 0.5rem) - max(SA, 0.5rem)
+   *   -added = min(0px, max(SA, 0.5rem) - kb - 0.25rem)
+   *
+   * which is 0 at rest in every safe-area regime and cancels to the pixel
+   * once the keyboard is up. It is a SECOND copy of that formula, so the
+   * two rules are deliberately adjacent: change one, change the other.
+   * The E2E that guards the pairing is COMP-IMG-6 in
+   * tests/e2e/specs/chat-image-review.spec.ts — it asserts the sibling's
+   * box is unchanged to the pixel, which is false the moment they drift.
+   *
+   * The transition matches `.pb-keyboard`'s exactly. Without it the two
+   * properties animate against each other and the held element drifts
+   * ~6-19px mid-keyboard before settling back. */
+  .mb-keyboard-cancel {
+    margin-bottom: min(
+      0px,
+      calc(
+        max(var(--safe-area-inset-bottom, env(safe-area-inset-bottom, 0px)), 0.5rem) -
+          var(--kb-h, 0px) - 0.25rem
+      )
+    );
+    transition: margin-bottom 250ms cubic-bezier(0.32, 0.72, 0, 1);
+  }
+
+}
+
+@keyframes bubbleEnterGrow {
+  from {
+    grid-template-rows: 0fr;
+  }
+  to {
+    grid-template-rows: 1fr;
+  }
+}
+
+@keyframes bubbleExitShrink {
+  from {
+    grid-template-rows: 1fr;
+  }
+  to {
+    grid-template-rows: 0fr;
+  }
+}
+
+/* MSG-BUBBLE-12.15 — the room an ARRIVAL flip makes for itself.
+
+   The gesture never uses these: its spacer is a pure function of a value the
+   finger moves every frame, so it travels for free. An arrival's progress is a
+   STEP, and the rendered height is only ever the ENDPOINT of the half in
+   flight — these cover the distance between two of them.
+
+   ⚠ Animations, NOT a transition, and that is load-bearing. A transition needs
+   a previously resolved computed style to move away from; the spacer has none,
+   because the commit that mounts the measurement twin and the commit its ref
+   callback triggers with the measured target both land before the browser
+   resolves style once. The element first EXISTS at its destination. A keyframe
+   carries its own `from`, so it runs on the first style resolution.
+
+   ⚠ `--flip-space` rather than a literal: the shrink's start value is never a
+   rendered height (see above), so it has to reach CSS some other way. Set
+   inline by MessageBubble for the whole turn. */
+@keyframes flipSpaceOpen {
+  from {
+    height: 0;
+  }
+  to {
+    height: var(--flip-space, 0px);
+  }
+}
+
+@keyframes flipSpaceClose {
+  from {
+    height: var(--flip-space, 0px);
+  }
+  to {
+    height: 0;
+  }
+}
+
+/* The endpoints stay correct without the travel, so this degrades to exactly
+   the pre-12.15 behaviour rather than to a broken layout: a grow gets its room
+   in one frame, a shrink gives it back in one. */
+@media (prefers-reduced-motion: reduce) {
+  .flip-spacer {
+    animation: none;
+  }
+}
+
+@keyframes textRevealPassRtl {
+  /* Mirror of textRevealPass. With the 270deg gradient the opaque end sits at
+     the mask's RIGHT, so walking the position the OTHER way sweeps the edge
+     right-to-left across the element. */
+  from {
+    -webkit-mask-position: 0% 0;
+    mask-position: 0% 0;
+  }
+  to {
+    -webkit-mask-position: 100% 0;
+    mask-position: 100% 0;
+  }
+}
+
+@keyframes textRevealPass {
+  /* 100% -> 0% walks the mask's opaque region rightwards across the element,
+     so the reveal travels WITH the reading direction (the same correction
+     MSG-BUBBLE-6.5 records for the sweep it replaces). */
+  from {
+    -webkit-mask-position: 100% 0;
+    mask-position: 100% 0;
+  }
+  to {
+    -webkit-mask-position: 0% 0;
+    mask-position: 0% 0;
+  }
+}
+
+
+/* LIFE-BACKDROP-19 — travel must be a whole number of background tiles or the
+   loop snaps. ΔP = 400 is exactly 2 tiles at `background-size: 200% 100%`,
+   which is the ONLY size this keyframe is valid for. A utility at any other
+   size needs its own keyframe (see `backdropBuildingSheen`); the arithmetic and
+   the guard test are in `shimmerLoop.test.ts`. */
+@keyframes shimmerGradient {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* LIFE-BACKDROP-19 — the `background-size: 250% 100%` sibling. ΔP = 500 is
+   exactly 3 tiles at that size. */
+@keyframes backdropBuildingSheen {
+  0%   { background-position: 250% 0; }
+  100% { background-position: -250% 0; }
+}
+
+/* LIFE-BACKDROP-15: the incoming scene layer's fade-in. Opacity only — the
+   outgoing layer beneath it is opaque and untouched, so the composite never
+   dips below full coverage. */
+@keyframes lifeBackdropFadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* NAV-ANIM: directional page transitions with iOS-style parallax.
+   Transform/opacity-only → iOS-WKWebView-safe; the iOS-feel ease lives in
+   the easing curve.
+
+   FORWARD/down (e.g. chat-list → chat): incoming enters from the RIGHT and
+   covers; the outgoing parent RECEDES left ~22% + dims (parallax).
+   BACK/up (chat → chat-list): the outgoing child slides fully OFF to the
+   right (on top); the parent it reveals returns from its receded/dim state
+   (reverse parallax). */
+@keyframes pageEnterForward {
+  from { transform: translateX(100%); }
+  to   { transform: translateX(0); }
+}
+@keyframes pageExitForward {
+  from { transform: translateX(0); opacity: 1; }
+  to   { transform: translateX(-22%); opacity: 0.6; }
+}
+@keyframes pageEnterBack {
+  from { transform: translateX(-22%); opacity: 0.7; }
+  to   { transform: translateX(0); opacity: 1; }
+}
+@keyframes pageExitBack {
+  from { transform: translateX(0); }
+  to   { transform: translateX(100%); }
+}
+
+/* Heart burst — fired when a user double-taps a bubble to react.
+   Scales up past 1.0 for a satisfying squash-stretch overshoot, then
+   fades while drifting up slightly. Total 700ms; the element should
+   unmount when the animation ends. */
+/* MSG-PIPE-32.6 — a vocab underline that arrives after its row mounted (the
+   sender's streamed preview) fades in; `both` holds it transparent through a
+   stagger delay. Spans present when the row mounts never carry the class. */
+@keyframes vocabUnderlineIn {
+  from { text-decoration-color: transparent; }
+}
+.vocab-fade-in {
+  animation: vocabUnderlineIn 400ms ease-out both;
+}
+@media (prefers-reduced-motion: reduce) {
+  .vocab-fade-in { animation: none; }
+}
+
+@keyframes heartBurst {
+  0%   { transform: translate(-50%, -50%) scale(0.3);   opacity: 0; }
+  20%  { transform: translate(-50%, -50%) scale(1.35);  opacity: 1; }
+  50%  { transform: translate(-50%, -50%) scale(1);     opacity: 1; }
+  100% { transform: translate(-50%, -70%) scale(1.05);  opacity: 0; }
+}
+
+.heart-burst {
+  animation: heartBurst 700ms cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  pointer-events: none;
+  will-change: transform, opacity;
+}
+
+/* Welcome-screen ambient glow. Three soft gradient orbs drift on long,
+   coprime-ish, desynced loops (19s / 24s / 29s, one with a negative
+   delay) while their opacity dips toward ~0 and swells back — so the
+   blur reads as a glow that wanders, slowly fading out and reappearing
+   rather than a fixed pulse. transform owns the drift+scale, so the
+   orbs are positioned with left/top only (no translate utility). */
+@keyframes welcomeGlow1 {
+  0%   { transform: translate(0, 0) scale(1);          opacity: 0.05; }
+  25%  { transform: translate(13vw, 9vh) scale(1.18);  opacity: 0.30; }
+  45%  { transform: translate(-9vw, 17vh) scale(0.92); opacity: 0.10; }
+  70%  { transform: translate(8vw, -11vh) scale(1.12); opacity: 0.28; }
+  100% { transform: translate(0, 0) scale(1);          opacity: 0.05; }
+}
+@keyframes welcomeGlow2 {
+  0%   { transform: translate(6vw, 4vh) scale(1.05);   opacity: 0.22; }
+  30%  { transform: translate(-14vw, -7vh) scale(0.9); opacity: 0.04; }
+  55%  { transform: translate(4vw, 16vh) scale(1.25);  opacity: 0.26; }
+  80%  { transform: translate(11vw, -9vh) scale(1.0);  opacity: 0.12; }
+  100% { transform: translate(6vw, 4vh) scale(1.05);   opacity: 0.22; }
+}
+@keyframes welcomeGlow3 {
+  0%   { transform: translate(-10vw, 12vh) scale(0.95); opacity: 0.16; }
+  35%  { transform: translate(9vw, -9vh) scale(1.15);   opacity: 0.05; }
+  60%  { transform: translate(-5vw, -15vh) scale(1.05); opacity: 0.24; }
+  85%  { transform: translate(-13vw, 6vh) scale(0.9);   opacity: 0.10; }
+  100% { transform: translate(-10vw, 12vh) scale(0.95); opacity: 0.16; }
+}
+.welcome-glow-1 { animation: welcomeGlow1 19s ease-in-out infinite; }
+.welcome-glow-2 { animation: welcomeGlow2 24s ease-in-out infinite; }
+.welcome-glow-3 { animation: welcomeGlow3 29s ease-in-out infinite; animation-delay: -7s; }
+
+@media (prefers-reduced-motion: reduce) {
+  .welcome-glow-1, .welcome-glow-2, .welcome-glow-3 {
+    animation: none;
+    opacity: 0.18;
+  }
+}
+
+/* Scroll-to-message flash — applied by MessageList when a caller
+   asks to land on a specific message (reply-tap, image-viewer
+   "go to position"). A subtle gradient-accent halo pulses around the
+   bubble row for ~1.5s, then fades. CSS variables `--color-brand` /
+   `--color-accent` resolve from the active theme so it reads in both
+   light + dark mode without contrast issues. Pointer-events stay
+   intact — the flash is purely cosmetic. */
+@keyframes scrollFlash {
+  0%   { background-color: color-mix(in srgb, var(--color-accent-strong) 0%, transparent); }
+  20%  { background-color: color-mix(in srgb, var(--color-accent-strong) 18%, transparent); }
+  100% { background-color: color-mix(in srgb, var(--color-accent-strong) 0%, transparent); }
+}
+
+[data-message-id][data-scroll-flash="true"] {
+  animation: scrollFlash 1500ms ease-out forwards;
+  border-radius: 12px;
+}
+
+/* AUTH-SIGN-IN-5 — reCAPTCHA visible-challenge safe-area inset.
+ *
+ * The invisible verifier sometimes escalates to a visible challenge:
+ * Google injects a fixed, top-z-index overlay (appended to <body>) that
+ * wraps a cross-origin iframe. We can't touch the iframe internals, but
+ * we CAN keep the overlay clear of the status bar / home indicator on
+ * notched devices. Best-effort: the selectors target the injected
+ * wrapper + the always-present invisible badge. If Google changes its
+ * DOM these become no-ops (they can't break anything). */
+.grecaptcha-badge {
+  bottom: max(env(safe-area-inset-bottom, 0px), 14px) !important;
+}
+/* The challenge popup's fixed wrapper (the parent of the challenge
+ * iframe). Padding keeps the centred popup off the unsafe edges. */
+body > div:has(> div > iframe[title*="recaptcha"]) {
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  box-sizing: border-box;
+}
+
+/* TUTOR-SETUP-12 — setup-mode step pointer (SetupPointerLayer.tsx).
+   A decorative, non-interactive highlight portalled to <body> that points
+   at the element the current onboarding step wants the user to act on:
+   a pulsing accent ring (tap targets) or an animated swipe-left finger
+   (the peek step). Never blocks interaction; never dims the screen.
+   THEME-1: --color-accent-strong, the solid orchid accent. */
+.setup-pointer {
+  position: fixed;
+  /* Default: above the chat content (message bubbles are normal-flow) but
+     BELOW the view-menu bottom sheet (--z-modal: 1200) — so the swipe pointer
+     over a message bubble never floats over an open modal. pointer-events:none
+     keeps it non-blocking regardless. */
+  z-index: 45;
+  pointer-events: none;
+}
+/* EXCEPTION: the view_mode ring must sit ABOVE the open view-menu sheet so it
+   can highlight the "show native row" toggle INSIDE the sheet. Only this step
+   goes over the modal (below the toast layer at 1300). */
+.setup-pointer[data-setup-pointer='view_mode'] {
+  z-index: 1250;
+}
+.setup-pointer-ring {
+  position: absolute;
+  inset: 0;
+  border-radius: 14px;
+  border: 2px solid color-mix(in srgb, var(--color-accent-strong) 90%, transparent);
+  animation: setupPointerPulse 1.6s ease-out infinite;
+}
+/* send_message points at the composer's input box (`rounded-[20px]`). The
+   ring sits 6px outside it (pad in SetupPointerLayer), so a 26px radius stays
+   CONCENTRIC with the 20px input corner — hugging it whether the input is a
+   one-line pill or grown to multiple lines. (9999px looked right on a single
+   line but drew stadium ends once the input wrapped — see bug report.) */
+.setup-pointer[data-setup-pointer='send_message'] .setup-pointer-ring {
+  border-radius: 26px;
+}
+@keyframes setupPointerPulse {
+  0%   { box-shadow: 0 0 0 0 color-mix(in srgb, var(--color-accent-strong) 50%, transparent); }
+  70%  { box-shadow: 0 0 0 12px color-mix(in srgb, var(--color-accent-strong) 0%, transparent); }
+  100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--color-accent-strong) 0%, transparent); }
+}
+.setup-pointer-swipe {
+  position: absolute;
+  top: 50%;
+  right: 12%;
+  line-height: 1;
+  /* `color` sets the lucide Pointer's STROKE (currentColor). The glyph is
+     FILLED (not outline-only) via the svg rule below. Drop-shadow keeps it
+     legible over either bubble theme. LIGHT: white fill + purple outline.
+     DARK: purple fill + white outline (both pop against the bubble). */
+  color: var(--color-accent-strong);
+  transform: translateY(-50%);
+  filter: drop-shadow(0 1px 2px rgba(255, 255, 255, 0.6))
+    drop-shadow(0 1px 3px rgba(0, 0, 0, 0.35));
+  animation: setupPointerSwipe 1.4s ease-in-out infinite;
+}
+.setup-pointer-swipe svg {
+  fill: #fff;
+}
+@media (prefers-color-scheme: dark) {
+  .setup-pointer-swipe {
+    color: #fff;
+  }
+  .setup-pointer-swipe svg {
+    fill: var(--color-accent-strong);
+  }
+}
+:root[data-theme='light'] .setup-pointer-swipe {
+  color: var(--color-accent-strong);
+}
+:root[data-theme='light'] .setup-pointer-swipe svg {
+  fill: #fff;
+}
+:root[data-theme='dark'] .setup-pointer-swipe {
+  color: #fff;
+}
+:root[data-theme='dark'] .setup-pointer-swipe svg {
+  fill: var(--color-accent-strong);
+}
+@keyframes setupPointerSwipe {
+  0%, 100% { transform: translate(0, -50%);      opacity: 0.4; }
+  50%      { transform: translate(-56px, -50%);  opacity: 1; }
+}
+
+/* TUTOR-SETUP-16 — step-completion transition on the walkthrough panel:
+   a success check pops in, then the next step's content fades up. */
+.setup-success-pop {
+  animation: setupSuccessPop 380ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+@keyframes setupSuccessPop {
+  0%   { transform: scale(0.4); opacity: 0; }
+  60%  { transform: scale(1.12); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
+}
+.setup-step-enter {
+  animation: setupStepEnter 260ms ease-out both;
+}
+/* QUIZ-UI-1 / QUIZ-UI-3 — the chat quiz floats in from just above the
+   composer, and grows upward from the same anchor when opened. */
+.chat-quiz-float-in {
+  animation: chatQuizFloatIn 220ms ease-out both;
+}
+@keyframes chatQuizFloatIn {
+  from { opacity: 0; transform: translateY(8px) scale(0.98); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+.chat-quiz-shake {
+  animation: chatQuizShake 320ms ease-in-out;
+}
+@keyframes chatQuizShake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-3px); }
+  75% { transform: translateX(3px); }
+}
+.chat-quiz-grow {
+  transform-origin: bottom center;
+  animation: chatQuizGrow 200ms ease-out both;
+}
+@keyframes chatQuizGrow {
+  from { opacity: 0.4; transform: scaleY(0.92); }
+  to   { opacity: 1; transform: scaleY(1); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .chat-quiz-float-in,
+  .chat-quiz-shake,
+  .chat-quiz-grow { animation: none; }
+}
+@keyframes setupStepEnter {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.setup-dot-pop {
+  animation: setupSuccessPop 380ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+@media (prefers-reduced-motion: reduce) {
+  .setup-success-pop,
+  .setup-step-enter,
+  .setup-dot-pop { animation: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .setup-pointer-ring { animation: none; box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-accent-strong) 35%, transparent); }
+  .setup-pointer-swipe { animation: none; }
+}
+
+/* LIFE-NODE-9 — glide entrance for newly-mounted life dialogue bubbles.
+   Mirrors .setup-step-enter but a bit larger (20px vs 6px, 380ms) so the
+   staggered beats on a cached-pick advance clearly rise from the bottom.
+   Applied to EVERY life bubble container: a new bubble (new key) plays it
+   once on mount; an already-mounted bubble keeps its DOM node across
+   re-renders (keyed by id) so it never re-animates. The pause + per-beat
+   stagger on the cached-pick advance is driven client-side (nodeEngineActions
+   arriveAtNode) by mounting each beat in turn.
+
+   LIFE-NODE-12 — the entrance travels on BOTH axes. It used to be
+   translateY-only, so the player's line, the NPC's line and the narrator's
+   card all arrived along the same vertical line and the side a bubble belongs
+   to carried no motion. The X half comes from `--life-beat-enter-x`, set
+   inline per bubble from `beatEnterOffsetX` (nodeEngineGlide.ts): +20px for
+   the right-aligned player, -20px for the left-aligned NPC, 0 for the centered
+   narrator. The `0px` fallback keeps an un-styled consumer on the old
+   vertical-only entrance rather than snapping it sideways.
+
+   The DURATION is deliberately unchanged: LIFE-NODE-11's event pacing rests on
+   BEAT_STAGGER_MS >= GLIDE_ENTER_MS, so the horizontal component lives inside
+   the existing 380ms window, never alongside it. */
+/* LIFE-NODE-13 — the beat MAKES SPACE for itself, the same way chat does
+   (MSG-BUBBLE-8.2). Without this the row appears at full height in a single
+   frame — the beats above JUMP up — and only then does the new bubble glide
+   into a gap that had already opened. Chat solved this by separating the two
+   motions, and the fix ports because the shape is identical: a bottom-anchored
+   column where a new row pushes the earlier ones up.
+
+   Two animations, deliberately different durations:
+     - this WRAPPER's row goes 0fr -> 1fr over the SHORTER time, easing the
+       beats above upward;
+     - the bubble itself travels over the FULL `lifeBeatEnter` duration, so it
+       is still arriving after the gap has finished opening.
+   Equal durations keep the bubble's top pinned to the gap's bottom edge the
+   whole way, which reads as growing in place rather than arriving.
+
+   Reuses chat's `bubbleEnterGrow` keyframes rather than redeclaring them: it
+   is the same 0fr -> 1fr track open, and a second copy would drift. */
+.life-beat-grow {
+  display: grid;
+  grid-template-rows: 1fr;
+  animation: bubbleEnterGrow 240ms ease-out 1 forwards;
+}
+.life-beat-grow > * {
+  /* All three CRITICAL, for the reasons documented on `.bubble-enter-grow`: a
+     grid item defaults to `align-self: stretch`, so a 0fr track would size the
+     BUBBLE rather than the gap; and `min-width: auto` resolves to min-content,
+     putting a floor under the bubble that the plain flex child never had. */
+  min-height: 0;
+  min-width: 0;
+  align-self: start;
+}
+@media (prefers-reduced-motion: reduce) {
+  .life-beat-grow {
+    animation: none;
+  }
+}
+
+/* LIFE-BUBBLE-15 — the counterpart to `.life-beat-enter`. A beat pushed out of
+   the two-bubble window used to be gone in a single frame; this fades it and
+   drifts it up, the direction it is being pushed.
+
+   Faster than the entrance (320ms vs 380ms) on purpose: an arrival is the
+   thing to look at, a departure is the thing to stop looking at, and matching
+   them makes the pair read as a swap rather than a hand-off. Nothing below it
+   moves while it plays — the column is bottom-anchored and this is the top
+   row — so the exit cannot disturb the beat the player is mid-sentence on. */
+.life-beat-exit {
+  animation: lifeBeatExit 320ms ease-in both;
+  pointer-events: none;
+}
+@keyframes lifeBeatExit {
+  from { opacity: 1; transform: translateY(0); }
+  to   { opacity: 0; transform: translateY(-12px); }
+}
+@media (prefers-reduced-motion: reduce) {
+  /* Opacity only — same reasoning as `.life-beat-enter`'s reduced-motion
+     swap: a beat still should not vanish with zero cue, but nothing slides. */
+  .life-beat-exit { animation: lifeBeatExitFade 320ms ease-in both; }
+}
+@keyframes lifeBeatExitFade {
+  from { opacity: 1; }
+  to   { opacity: 0; }
+}
+
+.life-beat-enter {
+  animation: lifeBeatEnter 380ms ease-out both;
+}
+@keyframes lifeBeatEnter {
+  from { opacity: 0; transform: translate(var(--life-beat-enter-x, 0px), 20px); }
+  to   { opacity: 1; transform: translate(0, 0); }
+}
+@media (prefers-reduced-motion: reduce) {
+  /* No transform under reduced motion — opacity-only fade so a bubble still
+     doesn't pop in with zero cue, but nothing slides. Swapping the whole
+     animation (rather than zeroing the travel) is what makes this cover BOTH
+     axes: there is no transform left for --life-beat-enter-x to feed. */
+  .life-beat-enter { animation: lifeBeatFade 380ms ease-out both; }
+}
+@keyframes lifeBeatFade {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* LIFE-BUBBLE-15 — the ghost must not REPLAY THE ENTRANCE.
+   `BubbleView` puts `.life-beat-enter` on every bubble unconditionally, and
+   the ghost is a freshly-mounted node, so its 380ms fade-IN started at the
+   same moment the wrapper's 320ms fade-OUT did. Two opacity animations on
+   nested elements MULTIPLY, so the composite went 0 -> up -> down while the
+   two translate transforms pulled against each other: the reported "flickers
+   a couple times as it fades". Killing the inner animation leaves the bubble
+   at its natural opacity 1 and no transform, so the wrapper is the only thing
+   animating and the fade is monotonic.
+
+   A descendant rule rather than a prop on `BubbleView`: the entrance class is
+   applied at three call sites inside that component, and a rule here cannot be
+   forgotten at a fourth. Placed AFTER the rule it overrides — specificity
+   already decides this, but an override that reads before its target is the
+   kind of thing a reviewer has to re-derive, and the LIFE-NODE-12 tests
+   locate `.life-beat-enter {` by first occurrence. */
+.life-beat-exit .life-beat-enter {
+  animation: none;
+}
+
+/* TUTOR-SETUP-14 — long-press-the-eye hint popover (SetupEyeHint.tsx). A
+   decorative, non-interactive callout pinned under the header eye icon that
+   tells the user to long-press it to turn the native row back on. Never blocks
+   the long-press it points at. THEME-1: --color-accent-strong, like the setup panel. */
+.setup-eye-hint {
+  position: fixed;
+  z-index: 46;
+  pointer-events: none;
+  animation: setupEyeHintIn 180ms ease-out;
+}
+.setup-eye-hint-bubble {
+  display: block;
+  border-radius: 12px;
+  background: var(--color-accent-strong);
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: 500;
+  line-height: 1.3;
+  text-align: center;
+  padding: 8px 12px;
+  box-shadow: 0 8px 24px -6px color-mix(in srgb, var(--color-accent-strong) 50%, transparent);
+}
+.setup-eye-hint-caret {
+  position: absolute;
+  top: -4px;
+  width: 10px;
+  height: 10px;
+  margin-left: -5px;
+  background: var(--color-accent-strong);
+  transform: rotate(45deg);
+  border-radius: 2px;
+}
+@keyframes setupEyeHintIn {
+  from { opacity: 0; transform: translateY(-4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .setup-eye-hint { animation: none; }
+}
+
+/* TUTOR-INV-16 — "theirs" typing indicator (MessageBubbleBody). Three dots
+   that bounce in sequence while the tutor LLM is still composing its reply,
+   BEFORE the translate job starts (which then shows the "Translating"
+   shimmer). Uses the muted foreground so it reads in both themes. */
+.typing-dots {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 0;
+}
+.typing-dots > span {
+  width: 6px;
+  height: 6px;
+  border-radius: 9999px;
+  background: var(--color-fg-muted);
+  opacity: 0.4;
+  animation: typingDot 1.2s ease-in-out infinite;
+}
+.typing-dots > span:nth-child(2) { animation-delay: 0.18s; }
+.typing-dots > span:nth-child(3) { animation-delay: 0.36s; }
+@keyframes typingDot {
+  0%, 60%, 100% { opacity: 0.35; transform: translateY(0); }
+  30%           { opacity: 0.9;  transform: translateY(-3px); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .typing-dots > span { animation: none; opacity: 0.5; }
+}
+
+
+/* IMG-VIEWER-9 — ImageViewer chrome hide/show.
+   A single tap on the image animates the controls out to the edge they sit
+   against; another brings them back. Driven by a data attribute on the viewer
+   overlay rather than per-element React state so the chrome components stay
+   unaware of the gesture, and so the transform is never applied to a WRAPPER
+   (a transformed wrapper becomes a containing block, which would re-resolve
+   the absolutely-positioned children's `top` against it and move them). */
+/* IMG-VIEWER-10 — the viewer's stage: the photo rests between the top
+   chrome row (2.5rem at max(safe-top, 1rem), + 1rem gutter) and the filmstrip
+   (its 0.25rem offset + 4.25rem height + 0.5rem gutter above the RAW bottom
+   inset — see ViewerFilmstrip #15). Declared on the overlay so the safe-area
+   token resolves with whatever runtime class overrides it. */
+[data-viewer-chrome] {
+  --viewer-stage-top: calc(max(var(--spacing-safe-top), 1rem) + 3.5rem);
+  --viewer-stage-bottom: calc(max(env(safe-area-inset-bottom, 0px), 1rem) + 5rem);
+  --viewer-stage-bottom-bare: max(env(safe-area-inset-bottom, 0px), 1rem);
+}
+[data-viewer-chrome] [data-viewer-chrome-top],
+[data-viewer-chrome] [data-viewer-chrome-bottom] {
+  /* IMG-VIEWER-12 — fades with a swipe-to-dismiss (set by ImageViewer). The
+     hidden rules below come later and win while the chrome is hidden. */
+  opacity: var(--viewer-chrome-opacity, 1);
+  transition:
+    transform 220ms cubic-bezier(0.4, 0, 0.2, 1),
+    opacity 160ms ease-out;
+}
+[data-viewer-chrome='hidden'] [data-viewer-chrome-top] {
+  transform: translateY(calc(-100% - max(var(--spacing-safe-top), 1rem)));
+  opacity: 0;
+  pointer-events: none;
+}
+[data-viewer-chrome='hidden'] [data-viewer-chrome-bottom] {
+  transform: translateY(calc(100% + max(env(safe-area-inset-bottom, 0px), 1rem)));
+  opacity: 0;
+  pointer-events: none;
+}
+/* Respect a reduced-motion preference: still hide, just don't travel. */
+@media (prefers-reduced-motion: reduce) {
+  [data-viewer-chrome] [data-viewer-chrome-top],
+  [data-viewer-chrome] [data-viewer-chrome-bottom] {
+    transition: opacity 120ms ease-out;
+    transform: none;
+  }
+}
+
+/* LIFE-TIME-1 — the backdrop time-of-day re-skin.
+ *
+ * `prompts/backdrop.ts` rule 12 has always instructed the SVG generator to tag
+ * `sky`, `lighting`, `lamp` and `shadow` classes "so the app can re-skin one
+ * SVG for morning / midday / evening / night", and `backdropDescriptor` keeps
+ * time OUT of the cache key on exactly that promise — one SVG per place. This
+ * is the half that was never written: every cached backdrop already carries the
+ * hooks, and until now nothing pulled them.
+ *
+ * Filters rather than per-class colour rules, deliberately. The SVGs are model-
+ * authored and their internals vary wildly; a rule that assumed a particular
+ * fill would work on one backdrop and not the next. Hue/saturation/brightness
+ * over the whole layer is robust to any drawing, and `.lamp` opacity is the one
+ * element-level exception because a lamp that is off at noon and on at night is
+ * the single cue that reads as time more than any wash.
+ */
+[data-time='dawn'] .life-backdrop-layer {
+  filter: saturate(0.72) brightness(0.86) hue-rotate(-12deg);
+}
+[data-time='morning'] .life-backdrop-layer {
+  filter: none;
+}
+[data-time='midday'] .life-backdrop-layer {
+  filter: saturate(1.06) brightness(1.06);
+}
+[data-time='afternoon'] .life-backdrop-layer {
+  filter: saturate(1.04) brightness(0.99) hue-rotate(6deg);
+}
+[data-time='evening'] .life-backdrop-layer {
+  filter: saturate(0.94) brightness(0.82) hue-rotate(14deg);
+}
+[data-time='night'] .life-backdrop-layer {
+  filter: saturate(0.6) brightness(0.5) hue-rotate(-18deg);
+}
+
+/* Lamps and lit windows: off in daylight, on after dusk. The generator tags
+ * these, so this is the one place a class-level rule is safe. */
+[data-time='dawn'] .life-backdrop-layer .lamp,
+[data-time='evening'] .life-backdrop-layer .lamp,
+[data-time='night'] .life-backdrop-layer .lamp {
+  opacity: 1;
+}
+[data-time='morning'] .life-backdrop-layer .lamp,
+[data-time='midday'] .life-backdrop-layer .lamp,
+[data-time='afternoon'] .life-backdrop-layer .lamp {
+  opacity: 0.15;
+}
+
+/* The wash crossfades with the story rather than snapping between scenes. */
+.life-backdrop-layer {
+  transition: filter 900ms ease-in-out;
+}
+@media (prefers-reduced-motion: reduce) {
+  .life-backdrop-layer {
+    transition: none;
+  }
+}
+
+/* THEME-11 — the bubble tuner's sliders: a painted track (set inline per
+   slider) and a white thumb big enough to drag on a phone. */
+.theme-tuner-range {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 12px;
+  border-radius: 9999px;
+  border: 1px solid var(--color-border);
+}
+.theme-tuner-range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 24px;
+  height: 24px;
+  border-radius: 9999px;
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.25);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+.theme-tuner-range::-moz-range-thumb {
+  width: 24px;
+  height: 24px;
+  border-radius: 9999px;
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.25);
+}
+
+/* CARDS-FAB-9 — the add speed dial. Each action rises 12px and grows from
+   0.9 as it fades in; the exit is the same motion reversed. The stagger is
+   an inline animation-delay; `both` holds the start frame through it. */
+.add-dial-item-in {
+  animation: addDialItemIn 200ms cubic-bezier(0.32, 0.72, 0, 1) both;
+}
+.add-dial-item-out {
+  animation: addDialItemIn 200ms ease-in reverse both;
+}
+.add-dial-scrim-in {
+  animation: addDialFade 200ms ease-out both;
+}
+.add-dial-scrim-out {
+  animation: addDialFade 240ms ease-in reverse both;
+}
+@keyframes addDialItemIn {
+  from { opacity: 0; transform: translateY(12px) scale(0.9); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+@keyframes addDialFade {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+/* CARDS-FAB-9 reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .add-dial-item-in { animation-name: addDialFade; }
+  .add-dial-item-out { animation-name: addDialFade; }
+}

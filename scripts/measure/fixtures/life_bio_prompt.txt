@@ -1,0 +1,12 @@
+<saga title="Le Long Chemin du Retour" tone="warm, small-scale, quietly stubborn">
+  <premise>Alex took a job in a small French town for one season and stayed for three. The bakery, the bus timetable and a half-finished house now hold them there.</premise>
+  <centralConflict>Roots versus the life Alex left unfinished elsewhere.</centralConflict>
+  <antagonist>The slow pull of a place that asks nothing and gives little.</antagonist>
+  <factions>the market traders | the commune office</factions>
+  <keyArchetypes>the keeper: Marie, who has run the bakery for thirty years and remembers everyone. | the leaver: Théo, who got out and comes back every August.</keyArchetypes>
+  <openThreads>the half-finished house | what Théo never says in August</openThreads>
+</saga>
+Generate a bio for Alex, a French-speaking character.
+User's free-text seed: "A small French town with one bakery and a bus that is always late."
+Native language: English.
+Return ONLY the JSON.

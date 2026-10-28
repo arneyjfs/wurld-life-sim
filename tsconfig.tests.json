@@ -1,0 +1,85 @@
+{
+  /* `tsc -b` covered only `src` and `vite.config.ts`, so everything under
+   * `tests/` was never typechecked. That hid a real defect in the life-cost
+   * measurement harness — the audit's numbers come from it — which declared
+   * `npcMemoryUpdates[].memory` where the production field is `oneLineMemory`,
+   * so NPC memory never reached a harness prompt.
+   *
+   * THE SAME DEFECT RECURRED, 2026-08-04, because this glob is a list of
+   * directories rather than a rule. `tests/playthrough` (the benchmark harness
+   * that replaced the deleted `tests/experiments/life-cost`) was not on it, and
+   * so was never compiled against the app's types. It shipped `{ id, text }`
+   * where `LiveTurnChoice` wants `{ id, practiceText, speechAct, saysLine }`,
+   * read `option.type` where the schema says `actionType`, and read
+   * `gradedPlan.target`/`.sourceLine`, which exist on neither graded plan
+   * variant. Every one of those is a compile error the moment the directory is
+   * included; all three reached a paid model run instead.
+   *
+   * ANY NEW HARNESS DIRECTORY MUST BE ADDED HERE. That is still a rule someone
+   * can forget, so `harnessTypecheck.test.ts` asserts the glob covers every
+   * directory under `tests/` that imports from `@/`.
+   *
+   * ⚠ THAT ASSERTION HAS A HOLE, and `tests/rules` fell straight through it
+   * (added 2026-09-16). The test only demands coverage for directories that
+   * import from `@/`; the rules suite imports `@firebase/rules-unit-testing`
+   * and `firebase/firestore` and nothing from `@/`, so it was invisible to the
+   * very guard written to stop this recurring — while asserting the security
+   * rules for `plan`, `trialEndsAt` and group creation. A directory being
+   * self-contained is not a reason to leave it uncompiled; it is only a reason
+   * the guard could not see it.
+   *
+   * `tests/e2e` remains excluded: it surfaces 26 pre-existing errors (mostly
+   * TS6133 unused locals and TS1484 type-only imports, plus real
+   * `noUncheckedIndexedAccess` holes in `helpers/firebase-admin.ts`). Worth
+   * clearing in a dedicated pass.
+   *
+   * ⚠ IT IS ALSO ESLINT-IGNORED (`eslint.config.js`), so until that pass lands
+   * NOTHING reads those files at commit time — and on 2026-09-22 a spec with an
+   * unbalanced brace was committed on a green `tsc -b`, because `tsc -b` does
+   * not cover the directory the file is in. The stop-gap is `lint:e2e-parse`,
+   * wired into `lint-staged` for every staged TypeScript file under
+   * `tests/e2e`: `playwright test --list` compiles each spec through
+   * Playwright's own transform in ~2s and fails on a parse error. It is a
+   * SYNTAX guard, not a type guard. The dedicated pass is still owed.
+   *
+   * (The glob is spelled out in prose above rather than written literally: a
+   * literal one ends in the two characters that close a block comment, which
+   * is how the note explaining a syntax error introduced one.) */
+  "compilerOptions": {
+    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.tests.tsbuildinfo",
+    "target": "es2023",
+    "lib": ["ES2023", "DOM", "DOM.Iterable"],
+    "module": "esnext",
+    "types": ["node"],
+    "skipLibCheck": true,
+
+    /* Bundler mode */
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+    "verbatimModuleSyntax": true,
+    "moduleDetection": "force",
+    "noEmit": true,
+    "jsx": "react-jsx",
+
+    /* Strict */
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "noImplicitOverride": true,
+
+    /* Linting */
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "erasableSyntaxOnly": true,
+    "noFallthroughCasesInSwitch": true,
+
+    "paths": {
+      "@/*": ["./src/*"]
+    }
+  },
+  "include": [
+    "tests/experiments/**/*.ts",
+    "tests/playthrough/**/*.ts",
+    "tests/rules/**/*.ts",
+    "src"
+  ]
+}

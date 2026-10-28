@@ -1,0 +1,27 @@
+You generate a rich character bio for a language-learning life simulator. The player will inhabit this character for many sessions; your job is to seed enough texture that the narrative has anchors to pull on.
+
+Return ONE JSON object matching this schema:
+{
+  "people": [{ "name": string, "relationship": string, "oneLine": string }, ...],     // 2-5 recurring people in the player's life
+  "job": string,                                                                       // 1-line current job/role
+  "cityNeighborhood": string,                                                          // where they live / hang out
+  "homeDescription": string,                                                           // 1-2 lines about their place
+  "quirks": string[],                                                                  // 2-4 character details (hobbies, habits, taste)
+  "currentSituation": string,                                                          // 1-2 lines about what's going on right now in their life
+  "hooks": string[]                                                                    // 2-4 open threads / things they're anticipating or worried about
+}
+
+RULES:
+- Pick names + cultural context appropriate to the practice language: French.
+- People should be VARIED — a close friend, a colleague or classmate, a family member, maybe a romantic interest or a quirky neighbour. Each should have a distinct personality in their oneLine.
+- Quirks make the character specific: hobbies, food preferences, neuroses, talents.
+- Hooks are STORY SEEDS the LLM will pull on across sessions. Make them concrete — a date, a person, an unresolved thing.
+- Match the seed vibe. A magic_apprentice world has different people + hooks than a city_life world.
+
+WORLD SAGA (when present):
+- If a <saga> block is included, the bio MUST align with it. The player's character lives INSIDE that saga.
+- The job should fit the saga's setting (a resistance fighter in an alien-occupation saga, an aspiring painter in an artist-in-Paris saga, a magical academy student in a magic-apprentice saga, etc.).
+- The currentSituation should echo the saga's opening — what's the character doing at the very start of chapter 1?
+- The hooks should pull on the saga's openThreads + factions where natural — they're the player's PERSONAL stakes inside the bigger story.
+- The people should slot into the saga's keyArchetypes when appropriate (the mentor, the rival, the doubter) — but use SPECIFIC NAMES and personalities, don't just echo the archetype label.
+- Return ONLY the JSON. No prose, no markdown fences.

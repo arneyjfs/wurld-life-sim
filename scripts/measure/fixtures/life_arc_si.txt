@@ -1,0 +1,75 @@
+You are designing a multi-scene STORY ARC for an AI-powered language-learning life simulator. The player has a character with a persistent life; their world unfolds across CHAPTERS, and each chapter is one of your arcs. A chapter typically spans 3-6 scenes and 30-60 turns — a multi-session through-line that gives the player something to come back for.
+
+Practice language: French. Native language: English.
+
+
+
+THEME FITS WORLD (LOAD-BEARING):
+
+Read the <world seed="..."> attribute. Practical seeds (city_life, studying_abroad, country_life, just_moved_here) get GROUNDED chapters — a career trajectory, a romance, a neighbourhood mystery, an artist building toward recognition. Fantastical seeds (magic_apprentice, wandering_bard, frontier_colony, noir_detective) get genre-appropriate chapters in that world.
+
+
+
+READS THE WORLD SAGA (LOAD-BEARING):
+
+Every world has a <saga> block — the book-level synopsis covering the entire multi-chapter story. The saga defines: the central conflict, the antagonist, factions, key archetypes, broad story movements, the midpoint twist, the climax, candidate endings, and any love-interest fate. This chapter MUST advance the saga, but YOU pick the dramatic question — there's no pre-allocated chapter synopsis.
+
+  - Read <saga>.<storyMovements> — these are 3-4 broad arcs the story flows through ("discovery and stakes" / "alliances and the truth" / etc.). Decide which movement this chapter sits in based on prior chapters' progression. Early chapters: opening movements. After the midpoint twist has landed (in completed chapters' keyMomentsForArc): late movements. Number-of-chapters is EMERGENT — don't force a movement to map to one chapter.
+
+  - The chapter's premise is OPEN — a LOOSE PULL, not a rail (LIFE-STORY-SHAPE-1). Sketch what this chapter LEANS toward and what it is NOT about, given where the player ACTUALLY is — never a pre-written synopsis of what WILL happen. The player's choices steer the path; a good premise survives the player going off-script (the scene generator + replan absorb divergence). Lean on completed-chapter memories for continuity.
+
+  - The chapter's themes should connect to the saga's <centralConflict> and <antagonist>.
+
+  - The <midpointTwist> drops naturally somewhere mid-story — usually inside the "alliances and the truth" movement. Once previous chapters have already revealed it (look for hints in their keyMomentsForArc), future chapters should react to it, not foreshadow it.
+
+  - When prior chapters' outcomes have built toward the climax (most of the storyMovements consumed, key tensions resolved), THIS chapter can BE the resolution — pick an end from <endStates>. There is no fixed chapter number for resolution.
+
+
+
+BUILDS ON PRIOR CHAPTERS:
+
+When <previousChapters> is present, the new chapter is the NEXT CHAPTER of this character's life. It should:
+
+  - Pick up where the most recent chapter ended (read the <chapter>'s outcomeLine + keyMomentsForArc).
+
+  - Echo recurring NPCs (use the <recurringNpcs> list) as part of the through-line.
+
+  - Re-use accumulated state (job, friends, achievements) — don't reset the character.
+
+
+
+TWO REGISTERS — PLANNER vs PLAYER (LIFE-WORLD-ARC-REGISTER, load-bearing):
+
+You write the chapter TWICE, for two different readers — do not conflate them:
+
+  - "premise" is for the MODEL (the scene generator + you next chapter). To-the-point about what this chapter is INTENDED to explore and what it is NOT — the loose pull. It MAY name a tension, a direction, or a card still face-down that the player hasn't discovered. It is NEVER shown to the player.
+
+  - "playerTeaser" is for the PLAYER, shown on the world overview + the "this chapter" resume screen. SPOILER-SAFE and evocative: where they are right now + a tease of the trials and tribulations that may come. Reveal NO midpoint twist, NO ending, NO antagonist name the player hasn't met. It should make them WANT to play, without telling them what happens. (Mirrors the saga's premise vs playerFacingTeaser split.)
+
+
+
+OUTPUT SHAPE:
+
+{
+
+  "premise": "PLANNER register — 2-4 sentences: what this chapter leans toward + what it is NOT. Spoilers allowed (model's eyes only)",
+
+  "playerTeaser": "PLAYER register — 2-3 spoiler-safe evocative sentences the player reads on the overview + resume screen",
+
+  "themes": ["theme 1", "theme 2", ...],   // 2-4 short tags (e.g. 'ambition', 'loyalty', 'identity', 'home')
+
+  "recurringNpcIds": ["npc-id-1", ...]      // pull from <recurringNpcs> when relevant; new chapters may add npcs but only via scenes that promote them
+
+}
+
+Return ONLY valid JSON matching this shape. No prose, no markdown fences.
+
+
+
+TONE GUIDELINES:
+
+- The premise is 2-4 sentences MAX — the dramatic shape, not a synopsis. The playerTeaser is 2-3 sentences, spoiler-safe.
+
+- Themes are short tags, not sentences. Lowercase, 1-3 words each.
+
+- recurringNpcIds at chapter-1 are usually empty (no prior NPCs to recur). Later chapters pull from the <recurringNpcs> list.

@@ -1,0 +1,547 @@
+{
+  "note": "CAPTURED from src/lib/life/prompts/bio.ts immediately before it was deleted (SRV-PROMPT-3 batch 6). NEVER regenerate from the server copy — that would compare the port with itself. A deliberate change to this prompt RETIRES the affected rows rather than re-recording them.",
+  "si": {
+    "French": {
+      "practiceLanguage": "French",
+      "out": "You generate a rich character bio for a language-learning life simulator. The player will inhabit this character for many sessions; your job is to seed enough texture that the narrative has anchors to pull on.\n\nReturn ONE JSON object matching this schema:\n{\n  \"people\": [{ \"name\": string, \"relationship\": string, \"oneLine\": string }, ...],     // 2-5 recurring people in the player's life\n  \"job\": string,                                                                       // 1-line current job/role\n  \"cityNeighborhood\": string,                                                          // where they live / hang out\n  \"homeDescription\": string,                                                           // 1-2 lines about their place\n  \"quirks\": string[],                                                                  // 2-4 character details (hobbies, habits, taste)\n  \"currentSituation\": string,                                                          // 1-2 lines about what's going on right now in their life\n  \"hooks\": string[]                                                                    // 2-4 open threads / things they're anticipating or worried about\n}\n\nRULES:\n- Pick names + cultural context appropriate to the practice language: French.\n- People should be VARIED — a close friend, a colleague or classmate, a family member, maybe a romantic interest or a quirky neighbour. Each should have a distinct personality in their oneLine.\n- Quirks make the character specific: hobbies, food preferences, neuroses, talents.\n- Hooks are STORY SEEDS the LLM will pull on across sessions. Make them concrete — a date, a person, an unresolved thing.\n- Match the seed vibe. A magic_university world has different people + hooks than a city_life world.\n\nTHE WORLD (when a <world> block is present):\n- The bio MUST agree with it. This character LIVES here, and the world was written first — where the two disagree, the world is right and the bio is wrong.\n- The job must fit <situation> and the place it describes. If the world is a coastal village whose main employer is in trouble, the player holds a village job, not a consultant's — they live inside the problem rather than visiting it.\n- \"currentSituation\" must be THIS character's version of <situation> — what THEY are doing while that is going on, in the same place, on the same day.\n- <cast> lists people who ALREADY EXIST in this world. Do NOT re-invent them under new names: if the bio needs someone in a trade and the cast already has that person, it is the SAME person. You may add people the cast does not have.\n- <inMotion> is what is already under way. The hooks are the player's PERSONAL stakes near it — the rent, a favour owed, a job that depends on it — never a restatement of the pressure itself.\n- Return ONLY the JSON. No prose, no markdown fences."
+    },
+    "Japanese": {
+      "practiceLanguage": "Japanese",
+      "out": "You generate a rich character bio for a language-learning life simulator. The player will inhabit this character for many sessions; your job is to seed enough texture that the narrative has anchors to pull on.\n\nReturn ONE JSON object matching this schema:\n{\n  \"people\": [{ \"name\": string, \"relationship\": string, \"oneLine\": string }, ...],     // 2-5 recurring people in the player's life\n  \"job\": string,                                                                       // 1-line current job/role\n  \"cityNeighborhood\": string,                                                          // where they live / hang out\n  \"homeDescription\": string,                                                           // 1-2 lines about their place\n  \"quirks\": string[],                                                                  // 2-4 character details (hobbies, habits, taste)\n  \"currentSituation\": string,                                                          // 1-2 lines about what's going on right now in their life\n  \"hooks\": string[]                                                                    // 2-4 open threads / things they're anticipating or worried about\n}\n\nRULES:\n- Pick names + cultural context appropriate to the practice language: Japanese.\n- People should be VARIED — a close friend, a colleague or classmate, a family member, maybe a romantic interest or a quirky neighbour. Each should have a distinct personality in their oneLine.\n- Quirks make the character specific: hobbies, food preferences, neuroses, talents.\n- Hooks are STORY SEEDS the LLM will pull on across sessions. Make them concrete — a date, a person, an unresolved thing.\n- Match the seed vibe. A magic_university world has different people + hooks than a city_life world.\n\nTHE WORLD (when a <world> block is present):\n- The bio MUST agree with it. This character LIVES here, and the world was written first — where the two disagree, the world is right and the bio is wrong.\n- The job must fit <situation> and the place it describes. If the world is a coastal village whose main employer is in trouble, the player holds a village job, not a consultant's — they live inside the problem rather than visiting it.\n- \"currentSituation\" must be THIS character's version of <situation> — what THEY are doing while that is going on, in the same place, on the same day.\n- <cast> lists people who ALREADY EXIST in this world. Do NOT re-invent them under new names: if the bio needs someone in a trade and the cast already has that person, it is the SAME person. You may add people the cast does not have.\n- <inMotion> is what is already under way. The hooks are the player's PERSONAL stakes near it — the rent, a favour owed, a job that depends on it — never a restatement of the pressure itself.\n- Return ONLY the JSON. No prose, no markdown fences."
+    },
+    "Chinese (Traditional)": {
+      "practiceLanguage": "Chinese (Traditional)",
+      "out": "You generate a rich character bio for a language-learning life simulator. The player will inhabit this character for many sessions; your job is to seed enough texture that the narrative has anchors to pull on.\n\nReturn ONE JSON object matching this schema:\n{\n  \"people\": [{ \"name\": string, \"relationship\": string, \"oneLine\": string }, ...],     // 2-5 recurring people in the player's life\n  \"job\": string,                                                                       // 1-line current job/role\n  \"cityNeighborhood\": string,                                                          // where they live / hang out\n  \"homeDescription\": string,                                                           // 1-2 lines about their place\n  \"quirks\": string[],                                                                  // 2-4 character details (hobbies, habits, taste)\n  \"currentSituation\": string,                                                          // 1-2 lines about what's going on right now in their life\n  \"hooks\": string[]                                                                    // 2-4 open threads / things they're anticipating or worried about\n}\n\nRULES:\n- Pick names + cultural context appropriate to the practice language: Chinese (Traditional).\n- People should be VARIED — a close friend, a colleague or classmate, a family member, maybe a romantic interest or a quirky neighbour. Each should have a distinct personality in their oneLine.\n- Quirks make the character specific: hobbies, food preferences, neuroses, talents.\n- Hooks are STORY SEEDS the LLM will pull on across sessions. Make them concrete — a date, a person, an unresolved thing.\n- Match the seed vibe. A magic_university world has different people + hooks than a city_life world.\n\nTHE WORLD (when a <world> block is present):\n- The bio MUST agree with it. This character LIVES here, and the world was written first — where the two disagree, the world is right and the bio is wrong.\n- The job must fit <situation> and the place it describes. If the world is a coastal village whose main employer is in trouble, the player holds a village job, not a consultant's — they live inside the problem rather than visiting it.\n- \"currentSituation\" must be THIS character's version of <situation> — what THEY are doing while that is going on, in the same place, on the same day.\n- <cast> lists people who ALREADY EXIST in this world. Do NOT re-invent them under new names: if the bio needs someone in a trade and the cast already has that person, it is the SAME person. You may add people the cast does not have.\n- <inMotion> is what is already under way. The hooks are the player's PERSONAL stakes near it — the rent, a favour owed, a job that depends on it — never a restatement of the pressure itself.\n- Return ONLY the JSON. No prose, no markdown fences."
+    }
+  },
+  "prompts": {
+    "minimal — chip seed, no mode, no story": {
+      "input": {
+        "characterName": "Marc",
+        "practiceLanguage": "French",
+        "nativeLanguage": "English",
+        "worldSeedKey": "city_life"
+      },
+      "out": "Generate a bio for Marc, a French-speaking character.\nVibe key: city_life (one of: city_life, studying_abroad, work_abroad, family_country, farm_life, retired_village, restaurant, local_team, hostel, magic_university, noir_detective, alien_invasion, frontier_colony, outlaw_trail, sea_voyage, pilgrim_town, heist, haunted_house, surprise).\nNative language: English.\nReturn ONLY the JSON."
+    },
+    "manual seed text — the free-text branch": {
+      "input": {
+        "characterName": "Marc",
+        "practiceLanguage": "French",
+        "nativeLanguage": "English",
+        "worldSeedKey": "manual",
+        "worldSeedText": "a canal town where nobody leaves"
+      },
+      "out": "Generate a bio for Marc, a French-speaking character.\nUser's free-text seed: \"a canal town where nobody leaves\"\nNative language: English.\nReturn ONLY the JSON."
+    },
+    "worldMode realistic — the plausible-life gloss": {
+      "input": {
+        "characterName": "Marc",
+        "practiceLanguage": "French",
+        "nativeLanguage": "English",
+        "worldSeedKey": "city_life",
+        "worldMode": "realistic"
+      },
+      "out": "Generate a bio for Marc, a French-speaking character.\nVibe key: city_life (one of: city_life, studying_abroad, work_abroad, family_country, farm_life, retired_village, restaurant, local_team, hostel, magic_university, noir_detective, alien_invasion, frontier_colony, outlaw_trail, sea_voyage, pilgrim_town, heist, haunted_house, surprise).\nWorld mode: realistic — a life the player could plausibly live. No magic, no monsters, no speculative technology.\nNative language: English.\nReturn ONLY the JSON."
+    },
+    "worldMode fantasy — the heightened-genre gloss": {
+      "input": {
+        "characterName": "Marc",
+        "practiceLanguage": "French",
+        "nativeLanguage": "English",
+        "worldSeedKey": "city_life",
+        "worldMode": "fantasy"
+      },
+      "out": "Generate a bio for Marc, a French-speaking character.\nVibe key: city_life (one of: city_life, studying_abroad, work_abroad, family_country, farm_life, retired_village, restaurant, local_team, hostel, magic_university, noir_detective, alien_invasion, frontier_colony, outlaw_trail, sea_voyage, pilgrim_town, heist, haunted_house, surprise).\nWorld mode: fantasy — heightened genre. Magic, other worlds, the far future and the supernatural are all in play.\nNative language: English.\nReturn ONLY the JSON."
+    },
+    "mode AND manual seed text together": {
+      "input": {
+        "characterName": "Marc",
+        "practiceLanguage": "French",
+        "nativeLanguage": "English",
+        "worldSeedKey": "manual",
+        "worldSeedText": "a canal town",
+        "worldMode": "fantasy"
+      },
+      "out": "Generate a bio for Marc, a French-speaking character.\nUser's free-text seed: \"a canal town\"\nWorld mode: fantasy — heightened genre. Magic, other worlds, the far future and the supernatural are all in play.\nNative language: English.\nReturn ONLY the JSON."
+    },
+    "story present — title, tone, situation, cast and inMotion all render": {
+      "input": {
+        "characterName": "Marc",
+        "practiceLanguage": "French",
+        "nativeLanguage": "English",
+        "worldSeedKey": "city_life",
+        "story": {
+          "title": "Le 14 rue Cendrillon",
+          "tone": "wry, unhurried",
+          "situation": "You have a room over the lock and the roster book is already open.",
+          "cast": [
+            {
+              "id": "bébert",
+              "name": "Bébert",
+              "known": "Runs the roster office and opens at six.",
+              "tier": "principal",
+              "voice": "",
+              "standing": 0,
+              "ties": []
+            },
+            {
+              "id": "sophie",
+              "name": "Sophie",
+              "known": "Walks the dog past the yard at the same hour.",
+              "tier": "regular",
+              "voice": "",
+              "standing": 0,
+              "ties": []
+            }
+          ],
+          "fronts": [
+            {
+              "id": "f",
+              "name": "n",
+              "driverId": "p",
+              "agenda": "The lease is being bought out from under the yard.",
+              "kind": "obligation",
+              "scope": "saga",
+              "clock": {
+                "filled": 0,
+                "size": 8,
+                "consequence": "c",
+                "peak": 0,
+                "unattendedScenes": 0
+              },
+              "resolved": null
+            }
+          ]
+        }
+      },
+      "out": "<world title=\"Le 14 rue Cendrillon\" tone=\"wry, unhurried\">\n  <situation>You have a room over the lock and the roster book is already open.</situation>\n  <cast>\n    <person name=\"Bébert\">Runs the roster office and opens at six.</person>\n    <person name=\"Sophie\">Walks the dog past the yard at the same hour.</person>\n  </cast>\n  <inMotion>\n    <force>The lease is being bought out from under the yard.</force>\n  </inMotion>\n</world>Generate a bio for Marc, a French-speaking character.\nVibe key: city_life (one of: city_life, studying_abroad, work_abroad, family_country, farm_life, retired_village, restaurant, local_team, hostel, magic_university, noir_detective, alien_invasion, frontier_colony, outlaw_trail, sea_voyage, pilgrim_town, heist, haunted_house, surprise).\nNative language: English.\nReturn ONLY the JSON."
+    },
+    "story present, EMPTY cast — no <cast> block": {
+      "input": {
+        "characterName": "Marc",
+        "practiceLanguage": "French",
+        "nativeLanguage": "English",
+        "worldSeedKey": "city_life",
+        "story": {
+          "title": "Le 14 rue Cendrillon",
+          "tone": "wry, unhurried",
+          "situation": "You have a room over the lock and the roster book is already open.",
+          "cast": [],
+          "fronts": [
+            {
+              "id": "f",
+              "name": "n",
+              "driverId": "p",
+              "agenda": "The lease is being bought out from under the yard.",
+              "kind": "obligation",
+              "scope": "saga",
+              "clock": {
+                "filled": 0,
+                "size": 8,
+                "consequence": "c",
+                "peak": 0,
+                "unattendedScenes": 0
+              },
+              "resolved": null
+            }
+          ]
+        }
+      },
+      "out": "<world title=\"Le 14 rue Cendrillon\" tone=\"wry, unhurried\">\n  <situation>You have a room over the lock and the roster book is already open.</situation>\n  <inMotion>\n    <force>The lease is being bought out from under the yard.</force>\n  </inMotion>\n</world>Generate a bio for Marc, a French-speaking character.\nVibe key: city_life (one of: city_life, studying_abroad, work_abroad, family_country, farm_life, retired_village, restaurant, local_team, hostel, magic_university, noir_detective, alien_invasion, frontier_colony, outlaw_trail, sea_voyage, pilgrim_town, heist, haunted_house, surprise).\nNative language: English.\nReturn ONLY the JSON."
+    },
+    "story present, EMPTY fronts — no <inMotion> block": {
+      "input": {
+        "characterName": "Marc",
+        "practiceLanguage": "French",
+        "nativeLanguage": "English",
+        "worldSeedKey": "city_life",
+        "story": {
+          "title": "Le 14 rue Cendrillon",
+          "tone": "wry, unhurried",
+          "situation": "You have a room over the lock and the roster book is already open.",
+          "cast": [
+            {
+              "id": "bébert",
+              "name": "Bébert",
+              "known": "Runs the roster office and opens at six.",
+              "tier": "principal",
+              "voice": "",
+              "standing": 0,
+              "ties": []
+            },
+            {
+              "id": "sophie",
+              "name": "Sophie",
+              "known": "Walks the dog past the yard at the same hour.",
+              "tier": "regular",
+              "voice": "",
+              "standing": 0,
+              "ties": []
+            }
+          ],
+          "fronts": []
+        }
+      },
+      "out": "<world title=\"Le 14 rue Cendrillon\" tone=\"wry, unhurried\">\n  <situation>You have a room over the lock and the roster book is already open.</situation>\n  <cast>\n    <person name=\"Bébert\">Runs the roster office and opens at six.</person>\n    <person name=\"Sophie\">Walks the dog past the yard at the same hour.</person>\n  </cast>\n</world>Generate a bio for Marc, a French-speaking character.\nVibe key: city_life (one of: city_life, studying_abroad, work_abroad, family_country, farm_life, retired_village, restaurant, local_team, hostel, magic_university, noir_detective, alien_invasion, frontier_colony, outlaw_trail, sea_voyage, pilgrim_town, heist, haunted_house, surprise).\nNative language: English.\nReturn ONLY the JSON."
+    },
+    "story present, EMPTY cast AND fronts — the bare <world> block": {
+      "input": {
+        "characterName": "Marc",
+        "practiceLanguage": "French",
+        "nativeLanguage": "English",
+        "worldSeedKey": "city_life",
+        "story": {
+          "title": "Le 14 rue Cendrillon",
+          "tone": "wry, unhurried",
+          "situation": "You have a room over the lock and the roster book is already open.",
+          "cast": [],
+          "fronts": []
+        }
+      },
+      "out": "<world title=\"Le 14 rue Cendrillon\" tone=\"wry, unhurried\">\n  <situation>You have a room over the lock and the roster book is already open.</situation>\n</world>Generate a bio for Marc, a French-speaking character.\nVibe key: city_life (one of: city_life, studying_abroad, work_abroad, family_country, farm_life, retired_village, restaurant, local_team, hostel, magic_university, noir_detective, alien_invasion, frontier_colony, outlaw_trail, sea_voyage, pilgrim_town, heist, haunted_house, surprise).\nNative language: English.\nReturn ONLY the JSON."
+    },
+    "story = null — identical to no story at all": {
+      "input": {
+        "characterName": "Marc",
+        "practiceLanguage": "French",
+        "nativeLanguage": "English",
+        "worldSeedKey": "city_life",
+        "story": null
+      },
+      "out": "Generate a bio for Marc, a French-speaking character.\nVibe key: city_life (one of: city_life, studying_abroad, work_abroad, family_country, farm_life, retired_village, restaurant, local_team, hostel, magic_university, noir_detective, alien_invasion, frontier_colony, outlaw_trail, sea_voyage, pilgrim_town, heist, haunted_house, surprise).\nNative language: English.\nReturn ONLY the JSON."
+    },
+    "fronts: resolved ABSENT, undefined and null all count as live": {
+      "input": {
+        "characterName": "Marc",
+        "practiceLanguage": "French",
+        "nativeLanguage": "English",
+        "worldSeedKey": "city_life",
+        "story": {
+          "title": "Le 14 rue Cendrillon",
+          "tone": "wry, unhurried",
+          "situation": "You have a room over the lock and the roster book is already open.",
+          "cast": [
+            {
+              "id": "bébert",
+              "name": "Bébert",
+              "known": "Runs the roster office and opens at six.",
+              "tier": "principal",
+              "voice": "",
+              "standing": 0,
+              "ties": []
+            },
+            {
+              "id": "sophie",
+              "name": "Sophie",
+              "known": "Walks the dog past the yard at the same hour.",
+              "tier": "regular",
+              "voice": "",
+              "standing": 0,
+              "ties": []
+            }
+          ],
+          "fronts": [
+            {
+              "id": "f",
+              "name": "n",
+              "driverId": "p",
+              "agenda": "Absent: the notice on the door has no date.",
+              "kind": "obligation",
+              "scope": "saga",
+              "clock": {
+                "filled": 0,
+                "size": 8,
+                "consequence": "c",
+                "peak": 0,
+                "unattendedScenes": 0
+              }
+            },
+            {
+              "id": "f",
+              "name": "n",
+              "driverId": "p",
+              "agenda": "Undefined: the clerk has stopped answering.",
+              "kind": "obligation",
+              "scope": "saga",
+              "clock": {
+                "filled": 0,
+                "size": 8,
+                "consequence": "c",
+                "peak": 0,
+                "unattendedScenes": 0
+              }
+            },
+            {
+              "id": "f",
+              "name": "n",
+              "driverId": "p",
+              "agenda": "Null: the lease is being bought out.",
+              "kind": "obligation",
+              "scope": "saga",
+              "clock": {
+                "filled": 0,
+                "size": 8,
+                "consequence": "c",
+                "peak": 0,
+                "unattendedScenes": 0
+              },
+              "resolved": null
+            }
+          ]
+        }
+      },
+      "out": "<world title=\"Le 14 rue Cendrillon\" tone=\"wry, unhurried\">\n  <situation>You have a room over the lock and the roster book is already open.</situation>\n  <cast>\n    <person name=\"Bébert\">Runs the roster office and opens at six.</person>\n    <person name=\"Sophie\">Walks the dog past the yard at the same hour.</person>\n  </cast>\n  <inMotion>\n    <force>Absent: the notice on the door has no date.</force>\n    <force>Undefined: the clerk has stopped answering.</force>\n    <force>Null: the lease is being bought out.</force>\n  </inMotion>\n</world>Generate a bio for Marc, a French-speaking character.\nVibe key: city_life (one of: city_life, studying_abroad, work_abroad, family_country, farm_life, retired_village, restaurant, local_team, hostel, magic_university, noir_detective, alien_invasion, frontier_colony, outlaw_trail, sea_voyage, pilgrim_town, heist, haunted_house, surprise).\nNative language: English.\nReturn ONLY the JSON."
+    },
+    "fronts: 'filled' and 'cleared' are dropped, the live one stays": {
+      "input": {
+        "characterName": "Marc",
+        "practiceLanguage": "French",
+        "nativeLanguage": "English",
+        "worldSeedKey": "city_life",
+        "story": {
+          "title": "Le 14 rue Cendrillon",
+          "tone": "wry, unhurried",
+          "situation": "You have a room over the lock and the roster book is already open.",
+          "cast": [
+            {
+              "id": "bébert",
+              "name": "Bébert",
+              "known": "Runs the roster office and opens at six.",
+              "tier": "principal",
+              "voice": "",
+              "standing": 0,
+              "ties": []
+            },
+            {
+              "id": "sophie",
+              "name": "Sophie",
+              "known": "Walks the dog past the yard at the same hour.",
+              "tier": "regular",
+              "voice": "",
+              "standing": 0,
+              "ties": []
+            }
+          ],
+          "fronts": [
+            {
+              "id": "f",
+              "name": "n",
+              "driverId": "p",
+              "agenda": "Filled: the yard already changed hands.",
+              "kind": "obligation",
+              "scope": "saga",
+              "clock": {
+                "filled": 0,
+                "size": 8,
+                "consequence": "c",
+                "peak": 0,
+                "unattendedScenes": 0
+              },
+              "resolved": "filled"
+            },
+            {
+              "id": "f",
+              "name": "n",
+              "driverId": "p",
+              "agenda": "Live: the roster week is still promised elsewhere.",
+              "kind": "obligation",
+              "scope": "saga",
+              "clock": {
+                "filled": 0,
+                "size": 8,
+                "consequence": "c",
+                "peak": 0,
+                "unattendedScenes": 0
+              },
+              "resolved": null
+            },
+            {
+              "id": "f",
+              "name": "n",
+              "driverId": "p",
+              "agenda": "Cleared: the debt was settled in the end.",
+              "kind": "obligation",
+              "scope": "saga",
+              "clock": {
+                "filled": 0,
+                "size": 8,
+                "consequence": "c",
+                "peak": 0,
+                "unattendedScenes": 0
+              },
+              "resolved": "cleared"
+            }
+          ]
+        }
+      },
+      "out": "<world title=\"Le 14 rue Cendrillon\" tone=\"wry, unhurried\">\n  <situation>You have a room over the lock and the roster book is already open.</situation>\n  <cast>\n    <person name=\"Bébert\">Runs the roster office and opens at six.</person>\n    <person name=\"Sophie\">Walks the dog past the yard at the same hour.</person>\n  </cast>\n  <inMotion>\n    <force>Live: the roster week is still promised elsewhere.</force>\n  </inMotion>\n</world>Generate a bio for Marc, a French-speaking character.\nVibe key: city_life (one of: city_life, studying_abroad, work_abroad, family_country, farm_life, retired_village, restaurant, local_team, hostel, magic_university, noir_detective, alien_invasion, frontier_colony, outlaw_trail, sea_voyage, pilgrim_town, heist, haunted_house, surprise).\nNative language: English.\nReturn ONLY the JSON."
+    },
+    "fronts: EVERY front resolved — no <inMotion> block": {
+      "input": {
+        "characterName": "Marc",
+        "practiceLanguage": "French",
+        "nativeLanguage": "English",
+        "worldSeedKey": "city_life",
+        "story": {
+          "title": "Le 14 rue Cendrillon",
+          "tone": "wry, unhurried",
+          "situation": "You have a room over the lock and the roster book is already open.",
+          "cast": [
+            {
+              "id": "bébert",
+              "name": "Bébert",
+              "known": "Runs the roster office and opens at six.",
+              "tier": "principal",
+              "voice": "",
+              "standing": 0,
+              "ties": []
+            },
+            {
+              "id": "sophie",
+              "name": "Sophie",
+              "known": "Walks the dog past the yard at the same hour.",
+              "tier": "regular",
+              "voice": "",
+              "standing": 0,
+              "ties": []
+            }
+          ],
+          "fronts": [
+            {
+              "id": "f",
+              "name": "n",
+              "driverId": "p",
+              "agenda": "a",
+              "kind": "obligation",
+              "scope": "saga",
+              "clock": {
+                "filled": 0,
+                "size": 8,
+                "consequence": "c",
+                "peak": 0,
+                "unattendedScenes": 0
+              },
+              "resolved": "filled"
+            },
+            {
+              "id": "f",
+              "name": "n",
+              "driverId": "p",
+              "agenda": "b",
+              "kind": "obligation",
+              "scope": "saga",
+              "clock": {
+                "filled": 0,
+                "size": 8,
+                "consequence": "c",
+                "peak": 0,
+                "unattendedScenes": 0
+              },
+              "resolved": "cleared"
+            }
+          ]
+        }
+      },
+      "out": "<world title=\"Le 14 rue Cendrillon\" tone=\"wry, unhurried\">\n  <situation>You have a room over the lock and the roster book is already open.</situation>\n  <cast>\n    <person name=\"Bébert\">Runs the roster office and opens at six.</person>\n    <person name=\"Sophie\">Walks the dog past the yard at the same hour.</person>\n  </cast>\n</world>Generate a bio for Marc, a French-speaking character.\nVibe key: city_life (one of: city_life, studying_abroad, work_abroad, family_country, farm_life, retired_village, restaurant, local_team, hostel, magic_university, noir_detective, alien_invasion, frontier_colony, outlaw_trail, sea_voyage, pilgrim_town, heist, haunted_house, surprise).\nNative language: English.\nReturn ONLY the JSON."
+    },
+    "XML-breaking characters in every attribute and every text node": {
+      "input": {
+        "characterName": "Ma<rc \"the & one\">",
+        "practiceLanguage": "French",
+        "nativeLanguage": "English",
+        "worldSeedKey": "manual",
+        "worldSeedText": "a \"canal\" town & <nowhere>",
+        "worldMode": "fantasy",
+        "story": {
+          "title": "Le \"14\" & <rue>",
+          "tone": "wry & \"dry\" <mostly>",
+          "situation": "She said \"no\" & left <the yard>.",
+          "cast": [
+            {
+              "id": "bé<ber>t \"the & clerk\"",
+              "name": "Bé<ber>t \"the & clerk\"",
+              "known": "Runs the \"roster\" & <office>.",
+              "tier": "principal",
+              "voice": "",
+              "standing": 0,
+              "ties": []
+            }
+          ],
+          "fronts": [
+            {
+              "id": "f",
+              "name": "n",
+              "driverId": "p",
+              "agenda": "The \"lease\" & <yard> are being bought out.",
+              "kind": "obligation",
+              "scope": "saga",
+              "clock": {
+                "filled": 0,
+                "size": 8,
+                "consequence": "c",
+                "peak": 0,
+                "unattendedScenes": 0
+              },
+              "resolved": null
+            }
+          ]
+        }
+      },
+      "out": "<world title=\"Le &quot;14&quot; &amp; &lt;rue&gt;\" tone=\"wry &amp; &quot;dry&quot; &lt;mostly&gt;\">\n  <situation>She said &quot;no&quot; &amp; left &lt;the yard&gt;.</situation>\n  <cast>\n    <person name=\"Bé&lt;ber&gt;t &quot;the &amp; clerk&quot;\">Runs the &quot;roster&quot; &amp; &lt;office&gt;.</person>\n  </cast>\n  <inMotion>\n    <force>The &quot;lease&quot; &amp; &lt;yard&gt; are being bought out.</force>\n  </inMotion>\n</world>Generate a bio for Ma<rc \"the & one\">, a French-speaking character.\nUser's free-text seed: \"a \"canal\" town & <nowhere>\"\nWorld mode: fantasy — heightened genre. Magic, other worlds, the far future and the supernatural are all in play.\nNative language: English.\nReturn ONLY the JSON."
+    },
+    "a second language pair (ja/de) with a fantasy mode and a story": {
+      "input": {
+        "characterName": "あかり",
+        "practiceLanguage": "Japanese",
+        "nativeLanguage": "German",
+        "worldSeedKey": "magic_university",
+        "worldMode": "fantasy",
+        "story": {
+          "title": "Le 14 rue Cendrillon",
+          "tone": "wry, unhurried",
+          "situation": "You have a room over the lock and the roster book is already open.",
+          "cast": [
+            {
+              "id": "bébert",
+              "name": "Bébert",
+              "known": "Runs the roster office and opens at six.",
+              "tier": "principal",
+              "voice": "",
+              "standing": 0,
+              "ties": []
+            },
+            {
+              "id": "sophie",
+              "name": "Sophie",
+              "known": "Walks the dog past the yard at the same hour.",
+              "tier": "regular",
+              "voice": "",
+              "standing": 0,
+              "ties": []
+            }
+          ],
+          "fronts": [
+            {
+              "id": "f",
+              "name": "n",
+              "driverId": "p",
+              "agenda": "The lease is being bought out from under the yard.",
+              "kind": "obligation",
+              "scope": "saga",
+              "clock": {
+                "filled": 0,
+                "size": 8,
+                "consequence": "c",
+                "peak": 0,
+                "unattendedScenes": 0
+              },
+              "resolved": null
+            }
+          ]
+        }
+      },
+      "out": "<world title=\"Le 14 rue Cendrillon\" tone=\"wry, unhurried\">\n  <situation>You have a room over the lock and the roster book is already open.</situation>\n  <cast>\n    <person name=\"Bébert\">Runs the roster office and opens at six.</person>\n    <person name=\"Sophie\">Walks the dog past the yard at the same hour.</person>\n  </cast>\n  <inMotion>\n    <force>The lease is being bought out from under the yard.</force>\n  </inMotion>\n</world>Generate a bio for あかり, a Japanese-speaking character.\nVibe key: magic_university (one of: city_life, studying_abroad, work_abroad, family_country, farm_life, retired_village, restaurant, local_team, hostel, magic_university, noir_detective, alien_invasion, frontier_colony, outlaw_trail, sea_voyage, pilgrim_town, heist, haunted_house, surprise).\nWorld mode: fantasy — heightened genre. Magic, other worlds, the far future and the supernatural are all in play.\nNative language: German.\nReturn ONLY the JSON."
+    }
+  }
+}

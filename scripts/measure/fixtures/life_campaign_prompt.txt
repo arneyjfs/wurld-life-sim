@@ -1,0 +1,44 @@
+<character name="Alex" practiceLanguage="French" nativeLanguage="English"/>
+
+<world seed="small_town" description="A small French town with one bakery and a bus that is always late."/>
+
+<saga title="Le Long Chemin du Retour" tone="warm, small-scale, quietly stubborn" estimatedChapters="4" loveInterestFate="open">
+  <premise>Alex took a job in a small French town for one season and stayed for three. The bakery, the bus timetable and a half-finished house now hold them there.</premise>
+  <centralConflict>Roots versus the life Alex left unfinished elsewhere.</centralConflict>
+  <antagonist>The slow pull of a place that asks nothing and gives little.</antagonist>
+  <factions>
+    <faction>the market traders</faction>
+    <faction>the commune office</faction>
+  </factions>
+  <keyArchetypes>
+    <archetype role="the keeper">Marie, who has run the bakery for thirty years and remembers everyone.</archetype>
+    <archetype role="the leaver">Théo, who got out and comes back every August.</archetype>
+  </keyArchetypes>
+  <storyMovements>
+    <movement title="settling">Alex stops treating the town as temporary.</movement>
+    <movement title="the pull">The unfinished thing elsewhere starts calling.</movement>
+    <movement title="the choice">Stay, or go, and what it costs either way.</movement>
+  </storyMovements>
+  <midpointTwist>The unfinished thing elsewhere turns out to be a person, not a job.</midpointTwist>
+  <climax>The lease and the train ticket land on the same day.</climax>
+  <endStates>
+    <ending key="stay">Alex signs the lease and means it.</ending>
+    <ending key="go">Alex leaves, and the town closes over the gap.</ending>
+  </endStates>
+  <openThreads>
+    <thread>the half-finished house</thread>
+    <thread>what Théo never says in August</thread>
+  </openThreads>
+</saga>
+
+<recentEvents>
+  <event kind="beat"/>
+  <event kind="decision"/>
+  <event kind="beat"/>
+  <event kind="correction"/>
+  <event kind="flashcard_added"/>
+</recentEvents>
+
+<hookPitch>The commune office loses the file that proves Alex ever registered here.</hookPitch>
+
+Design the scene outline.

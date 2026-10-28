@@ -1,0 +1,37 @@
+{
+  "indexes": [
+    {
+      "collectionGroup": "flashcards",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "practiceLanguage",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "topic",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "createdAt",
+          "order": "DESCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "flashcards",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "practiceLanguage",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "lastReviewed",
+          "order": "ASCENDING"
+        }
+      ]
+    }
+  ],
+  "fieldOverrides": []
+}

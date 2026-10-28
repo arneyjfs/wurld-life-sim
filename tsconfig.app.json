@@ -1,0 +1,51 @@
+{
+  "compilerOptions": {
+    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.app.tsbuildinfo",
+    "target": "es2023",
+    "lib": ["ES2023", "DOM", "DOM.Iterable"],
+    "module": "esnext",
+    "types": ["vite/client"],
+    "skipLibCheck": true,
+
+    /* Bundler mode */
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+    "verbatimModuleSyntax": true,
+    "moduleDetection": "force",
+    "noEmit": true,
+    "jsx": "react-jsx",
+
+    /* Strict */
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "noImplicitOverride": true,
+
+    /* Linting */
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "erasableSyntaxOnly": true,
+    "noFallthroughCasesInSwitch": true,
+
+    /* Path aliases */
+    "paths": {
+      "@/*": ["./src/*"]
+    }
+  },
+  /* Tests are compiled by `tsconfig.tests.json`, which includes `src` and
+   * declares `types: ["node"]`. They are EXCLUDED here so the app project
+   * covers shipped code only.
+   *
+   * Why this is a fix and not a convenience: 22 files under `src/` import node
+   * builtins, and until 2026-08-12 not one of them declared it. They compiled
+   * because a single unrelated file — `practiceGenerator/prompts.test.ts` —
+   * carried `/// <reference types="node" />`, and a triple-slash type reference
+   * applies to the WHOLE PROGRAM. Deleting that file for having no production
+   * value took node types away from every other test at once.
+   *
+   * The alternative was adding "node" to `types` below, which would let
+   * `process` and `Buffer` typecheck inside BROWSER code — the app runs in a
+   * WebView, and that is exactly the mistake `no-restricted-imports` exists to
+   * catch elsewhere. Narrowing the project is the stricter answer. */
+  "exclude": ["src/**/*.test.ts", "src/**/*.test.tsx", "src/test"],
+  "include": ["src"]
+}

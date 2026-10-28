@@ -1,0 +1,88 @@
+rules_version = '2';
+// Wurlds (life sim) Firestore rules.
+//
+// ⚠ Rules are PROJECT-WIDE. If this app shares the Wurld Firebase project
+// (wurld-e27d8, "shared auth" in docs/setup.md), do NOT deploy this file
+// there: it would replace every Wurld rule. Instead merge the `lifeWorlds` /
+// `lifeProfile` blocks below into wurld-app's firestore.rules and deploy them
+// from that repo. Deploy this file only to a project Wurlds owns alone.
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(uid) {
+      return isSignedIn() && request.auth.uid == uid;
+    }
+
+    function touchesAny(fields) {
+      return request.resource.data.diff(resource.data).affectedKeys().hasAny(fields);
+    }
+
+    // Fields only the server may write. `plan` / trial fields gate Plus-only
+    // features (Explain follow-ups, extra languages) exactly as in Wurld.
+    function serverOnlyUserFields() {
+      return ['plan', 'isAdmin', 'trialEndsAt', 'trialWarnedAt',
+              'planUntil', 'planSources', 'planProjectedAt', 'billingTester'];
+    }
+
+    match /users/{uid} {
+      // The profile: nativeLanguage, learningLanguage, displayName, levels.
+      allow read: if isOwner(uid);
+      allow create: if isOwner(uid)
+                    && !request.resource.data.keys().hasAny(serverOnlyUserFields());
+      allow update: if isOwner(uid) && !touchesAny(serverOnlyUserFields());
+      allow delete: if false;
+
+      // Words saved from a wurld land in the same deck as Wurld's chat
+      // (LIFE-VOCAB-*, MSG-VOCAB-* write path).
+      match /flashcards/{cardId} {
+        allow read, write: if isOwner(uid);
+      }
+
+      // Life sim (LIFE-DATA-*, LIFE-WORLD-*). Each user owns up to 5 worlds
+      // at users/{uid}/lifeWorlds/{worldId}, with subcollections for events /
+      // npcs / backdrops / scenes / completedArcs / assets (the assets sidecar
+      // holds the player-avatar bytes off the hot world doc, LIFE-DATA-1).
+      // Plus lifeProfile/main for the lastSeenWorldId breadcrumb. Owner-only.
+      match /lifeWorlds/{worldId} {
+        allow read, write: if isOwner(uid);
+        match /events/{eventId} {
+          allow read, write: if isOwner(uid);
+        }
+        match /npcs/{npcId} {
+          allow read, write: if isOwner(uid);
+        }
+        match /backdrops/{backdropId} {
+          allow read, write: if isOwner(uid);
+        }
+        // `scenes` holds the story unit (LIFE-SCENE-*).
+        match /scenes/{sceneId} {
+          allow read, write: if isOwner(uid);
+        }
+        // LIFE-SCENE-23: `campaigns` are orphans from before the 2026-08
+        // rename; the rule survives only so deleteLifeWorld can remove them.
+        match /campaigns/{docId} {
+          allow read, write: if isOwner(uid);
+        }
+        match /completedArcs/{arcId} {
+          allow read, write: if isOwner(uid);
+        }
+        match /assets/{assetId} {
+          allow read, write: if isOwner(uid);
+        }
+      }
+      match /lifeProfile/{docId} {
+        allow read, write: if isOwner(uid);
+      }
+    }
+
+    // Runtime switches (model routing, prompt config) are read by the
+    // functions with the Admin SDK only.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

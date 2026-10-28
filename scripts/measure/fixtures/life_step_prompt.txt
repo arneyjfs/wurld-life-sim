@@ -1,0 +1,28 @@
+<character name="Camille" practiceLanguage="French" nativeLanguage="English"/>
+<world seed="city-artist" description="A painter renting a cold studio above a bakery in Lyon."/>
+
+<canon>
+  <entity id="plac-le-cafe-de-flore-matin" name="Le Café de Flore · matin" kind="place"></entity>
+</canon>
+
+<npcRoster/>
+
+<backdropIndex/>
+
+<scene status="idle"/>
+
+<currentState>
+  <location>Le Café de Flore · matin</location>
+  <goals>
+    <goal>Finish the winter series</goal>
+    <goal>Make rent</goal>
+  </goals>
+</currentState>
+
+<storySoFar/>
+
+<recentEvents>
+<event kind="backdrop_visited"></event>
+</recentEvents>
+
+<turn kind="choice"><choice id="ask-sophie">Ask Sophie about the gallery</choice></turn>

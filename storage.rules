@@ -1,0 +1,17 @@
+rules_version = '2';
+// ⚠ Same warning as firestore.rules: do not deploy this to a shared project.
+service firebase.storage {
+  match /b/{bucket}/o {
+    // Life-sim assets (LIFE-DATA-*: backdrop SVGs, NPC avatars, the player's
+    // own avatar) live under lifeAssets/{uid}/... The owner can read, list and
+    // delete their own tree so delete-and-restart (LIFE-SETTINGS-6) can wipe
+    // it. Writes happen through Cloud Functions / the Admin SDK only.
+    match /lifeAssets/{uid}/{allPaths=**} {
+      allow read, delete: if request.auth != null && request.auth.uid == uid;
+      allow write: if false;
+    }
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}

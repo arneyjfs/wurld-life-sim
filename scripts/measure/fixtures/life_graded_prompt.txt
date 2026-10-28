@@ -1,0 +1,20 @@
+<sceneContext>
+<saga>Le Long Chemin du Retour</saga>
+<location>la boulangerie</location>
+<speaker>Marie</speaker>
+<recentBeats>
+  <beat>Tu es en retard, comme le bus.</beat>
+</recentBeats>
+</sceneContext>
+
+<plan kind="fill-blank">
+
+<testTarget>veux</testTarget>
+
+<sentenceContext>Je veux un pain, s'il vous plaît.</sentenceContext>
+
+Author a fill-blank question. Replace the testTarget in sentenceContext with "___" for the practice template. The "correct" chip is the testTarget itself; the wrong chips are sibling phrases the learner might confuse it with (different inflection, different fixed expression, different preposition — whatever's pedagogically meaningful).
+
+</plan>
+
+Author the question now. Emit ONLY the JSON object.

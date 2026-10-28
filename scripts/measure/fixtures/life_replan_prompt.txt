@@ -1,0 +1,19 @@
+<character name="Alex" practiceLanguage="French" nativeLanguage="English"/>
+
+<world seed="small_town"/>
+
+<currentOutline>{"title":"The Bus That Never Comes","premise":"Alex tries to get to the city and keeps not getting there.","phases":[{"key":"setup","goal":"Miss the bus in a way that matters"},{"key":"rising","goal":"Borrow a bicycle from someone who will want it back"},{"key":"resolution","goal":"Arrive too late to matter"}]}</currentOutline>
+
+<currentPhase>rising</currentPhase>
+
+<recentEvents>
+  <event kind="beat" speaker="narrator">La pluie tombe sur la place.</event>
+  <event kind="decision">Go into the bakery</event>
+  <event kind="beat" speaker="npc">Tu es en retard, comme le bus.</event>
+  <event kind="correction" outcome="wrong"/>
+  <event kind="flashcard_added"/>
+</recentEvents>
+
+<replanReason>tick</replanReason>
+
+Emit the updated outline.

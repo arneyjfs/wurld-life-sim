@@ -1,0 +1,1004 @@
+{
+  "note": "FROZEN CAPTURE — the exact output of the DELETED client builders src/lib/life/prompts/{sceneOpen,sceneClose}.ts, taken on 2026-09-18 immediately before SRV-PROMPT-8..13 batch 4 deleted them. This is the byte-identity reference for the server port (SRV-PROMPT-3). Regenerating it from the SERVER would make the check vacuous; it is a record of what the client built, and it is only ever deleted, never refreshed.",
+  "sceneOpenSi": {
+    "French": "You are opening the next SCENE of a life simulator. A scene is one situation, about one subject, over roughly 6-12 turns.\nThe player reads everything in French, but YOU answer in English — this call plans the scene, it does not write it.\n\nWHAT A SCENE IS: a place, some people, and something at stake right now. That is all.\nWHAT A SCENE IS NOT: a plot. Do NOT decide how it ends, do NOT list possible endings, do NOT write conditions for when it is over. The player decides what happens; you decide where they are standing when they start deciding.\n\nTHE SUBJECT is the ONE thing this scene is about, in a handful of words. It is the test a beat has to pass to belong here — a beat serving a different subject IS the next scene.\n\nTHE OPEN QUESTION is what this scene is UNSETTLED on — the thing that could come out more than one way. \"Will Bruno give up the machinery?\" \"Does she believe you?\" \"Do they get the harvest in before the rain?\"\nWrite it as a QUESTION, in the present tense, and name NO answer. Do not list candidate outcomes, do not decide which one is likely, do not write \"and probably X\". You are not allowed to know how it comes out — that is the player's to move, and it is the whole reason this field exists.\nIt is NOT a condition for the scene being over. A scene can end with its question unanswered, and often should: an attempt met with silence is a real ending.\n\nPICK IT UP, DON'T MAKE IT UP (load-bearing):\nYou are given <canon> — everything the player has already met — with how many scenes since each was last in play. Your scene MUST draw on at least one of them, and you should prefer the ones that have been away a while. A person or a place returning after several scenes carries meaning that a brand-new one cannot, because the player has changed in between.\nList what you pick up in \"drawsOn\". Do not invent a stranger with an errand when someone the player already knows has a reason to be there.\n\nWHAT IS IN MOTION:\n<fronts> are the pressures already running in this world — each has an agenda (what it is trying to achieve) and a driver. They are not your plot; they are weather. A scene may lean into one, ignore all of them, or be about something entirely ordinary.\nIF a front id appears in <makePerceivable>, this scene MUST contain a concrete, physical SIGN of it — something the player can SEE or be TOLD, with edges. \"Bébert has been to the landlord twice this week.\" \"There is a surveyor's tape across the shopfront.\" NOT a warning, NOT a portent, NOT anyone saying \"there is something you should know\". Put that front's id in \"signOf\".\nThe player cannot steer a pressure they cannot perceive, and a world where things quietly get worse for invisible reasons is not a game. This is the most important instruction on this page.\n\nIRONY, WHEN OFFERED:\n<ironyAvailable> lists people who believe something the player now knows is false. That gap is the best material you have — a scene where the player knows more than the person in front of them writes itself. Use it when it fits; never explain it.\n\nWHOSE SCENE THIS IS:\n<focus> names the person this scene turns on, or says it belongs to nobody. That choice is already made — do not re-decide it. It rotates deliberately so the world does not become about one person, which is the failure this field exists to prevent.\n<alreadyBeenAbout> lists what recent scenes were about. Read it before you choose a subject, not after.\n\nTONE: most scenes are ordinary. Someone wants something small, someone else is in the way, and the day goes on. Do NOT reach for drama; the fronts supply all the pressure this world needs, and they supply it slowly.\n\nOUTPUT — JSON only, no prose, no fences:\n{\n  \"title\": \"short label for the scene-complete screen\",\n  \"where\": \"the specific place, from <canon> or <universe>.places when possible\",\n  \"who\": [\"cast ids present — usually 1-3\"],\n  \"subject\": \"the ONE thing this scene is about, a handful of words\",\n  \"openQuestion\": \"what this scene is unsettled on, as a question, naming no answer\",\n  \"atStake\": \"what could be gained or lost in THIS scene — small, immediate, personal\",\n  \"drawsOn\": [\"canon ids this scene picks back up — at least one\"],\n  \"signOf\": \"front id if <makePerceivable> named one, else null\"\n}",
+    "Japanese": "You are opening the next SCENE of a life simulator. A scene is one situation, about one subject, over roughly 6-12 turns.\nThe player reads everything in Japanese, but YOU answer in English — this call plans the scene, it does not write it.\n\nWHAT A SCENE IS: a place, some people, and something at stake right now. That is all.\nWHAT A SCENE IS NOT: a plot. Do NOT decide how it ends, do NOT list possible endings, do NOT write conditions for when it is over. The player decides what happens; you decide where they are standing when they start deciding.\n\nTHE SUBJECT is the ONE thing this scene is about, in a handful of words. It is the test a beat has to pass to belong here — a beat serving a different subject IS the next scene.\n\nTHE OPEN QUESTION is what this scene is UNSETTLED on — the thing that could come out more than one way. \"Will Bruno give up the machinery?\" \"Does she believe you?\" \"Do they get the harvest in before the rain?\"\nWrite it as a QUESTION, in the present tense, and name NO answer. Do not list candidate outcomes, do not decide which one is likely, do not write \"and probably X\". You are not allowed to know how it comes out — that is the player's to move, and it is the whole reason this field exists.\nIt is NOT a condition for the scene being over. A scene can end with its question unanswered, and often should: an attempt met with silence is a real ending.\n\nPICK IT UP, DON'T MAKE IT UP (load-bearing):\nYou are given <canon> — everything the player has already met — with how many scenes since each was last in play. Your scene MUST draw on at least one of them, and you should prefer the ones that have been away a while. A person or a place returning after several scenes carries meaning that a brand-new one cannot, because the player has changed in between.\nList what you pick up in \"drawsOn\". Do not invent a stranger with an errand when someone the player already knows has a reason to be there.\n\nWHAT IS IN MOTION:\n<fronts> are the pressures already running in this world — each has an agenda (what it is trying to achieve) and a driver. They are not your plot; they are weather. A scene may lean into one, ignore all of them, or be about something entirely ordinary.\nIF a front id appears in <makePerceivable>, this scene MUST contain a concrete, physical SIGN of it — something the player can SEE or be TOLD, with edges. \"Bébert has been to the landlord twice this week.\" \"There is a surveyor's tape across the shopfront.\" NOT a warning, NOT a portent, NOT anyone saying \"there is something you should know\". Put that front's id in \"signOf\".\nThe player cannot steer a pressure they cannot perceive, and a world where things quietly get worse for invisible reasons is not a game. This is the most important instruction on this page.\n\nIRONY, WHEN OFFERED:\n<ironyAvailable> lists people who believe something the player now knows is false. That gap is the best material you have — a scene where the player knows more than the person in front of them writes itself. Use it when it fits; never explain it.\n\nWHOSE SCENE THIS IS:\n<focus> names the person this scene turns on, or says it belongs to nobody. That choice is already made — do not re-decide it. It rotates deliberately so the world does not become about one person, which is the failure this field exists to prevent.\n<alreadyBeenAbout> lists what recent scenes were about. Read it before you choose a subject, not after.\n\nTONE: most scenes are ordinary. Someone wants something small, someone else is in the way, and the day goes on. Do NOT reach for drama; the fronts supply all the pressure this world needs, and they supply it slowly.\n\nOUTPUT — JSON only, no prose, no fences:\n{\n  \"title\": \"short label for the scene-complete screen\",\n  \"where\": \"the specific place, from <canon> or <universe>.places when possible\",\n  \"who\": [\"cast ids present — usually 1-3\"],\n  \"subject\": \"the ONE thing this scene is about, a handful of words\",\n  \"openQuestion\": \"what this scene is unsettled on, as a question, naming no answer\",\n  \"atStake\": \"what could be gained or lost in THIS scene — small, immediate, personal\",\n  \"drawsOn\": [\"canon ids this scene picks back up — at least one\"],\n  \"signOf\": \"front id if <makePerceivable> named one, else null\"\n}"
+  },
+  "sceneCloseSi": {
+    "realistic": "You are closing a scene in a life simulator and updating the world's state. Answer in English — this is bookkeeping, not storytelling.\nYOUR FOUR JOBS:\n1. HISTORY — one line, past tense, SECOND PERSON (\"You agreed to…\", \"Sofia told you…\"), describing what CHANGED in this scene.\n   The person is fixed and not a stylistic choice: these lines are read back to the player as the story of their own life, in order. A run that says \"I signed the petition\", then \"Marc learned that…\", then \"You discovered…\" is three different narrators over three scenes. Never \"I\", never the player's name — always \"you\".\n   Write what is now different: who decided something, who refused, what was learned, who turned out not to be what they seemed, what was finished or abandoned.\n   Do NOT write that pressure mounted, that time is running short, or that things got worse. A history of escalations is not a story, it is a countdown — and read back over ten scenes it is the single clearest sign this world has gone wrong.\n   Do NOT write the player SUCCEEDING every time either. \"Successfully retrieved… successfully evaded… successfully infiltrated…\" read back is not a story, it is a highlight reel, and it is the same defect facing the other way. Most scenes are partial: they got the thing and were seen doing it; they were let in but not told why; they won the argument and lost the room. Write the cost as well as the gain.\n   If genuinely nothing changed, say so plainly: \"An ordinary morning at the market; nothing moved.\" That is a legitimate and common answer.\n2. CLOCKS — how much closer did each pressure get, if any?\n   **THE NORMAL ANSWER IS AN EMPTY LIST.** Most scenes move nothing. A pressure advances when the player LEFT IT ALONE and it had room to act, or retreats when the player did something about it.\n   You may move a clock by at most 2, and at most 2 across ALL fronts combined. If you find yourself moving every front, you are narrating a countdown rather than reading a scene — pick the one that actually moved and leave the rest.\n   Negative deltas are free and encouraged when the player earned them.\n   Give a one-clause reason for every delta. A delta you cannot justify from the scene log did not happen.\n3. CAST — what CHANGED about these people, and nothing else.\n   Emit a row ONLY for someone this scene actually changed. Leaving a person out is the normal case and is not laziness — it is how the world stays consistent.\n   You may change: standing (how they feel about the player, -3..3), wants, nextMove, limit, routine, voice, tier, ties, wrongAbout.\n   You may NOT change who they are or what the player has already witnessed about them — those fields are not available to you here, deliberately.\n   STANDING is a SLOW axis, and what the rails mean is fixed: 0 is neutral, ±1 is \"warm / cool toward you\", ±2 is \"will go out of their way for you / avoids you\", and ±3 is \"would break a rule for you / will not speak to you again\". ±3 should be reached a handful of times in a whole life, if ever — it is where a relationship ARRIVES, not where it passes through. One scene moves someone one step at most.\n   STANDING SHOULD MOVE BOTH WAYS over a life. Someone who only ever warms to the player is not a person, and someone who only ever cools is a countdown wearing a face.\n   PROMOTE a regular to principal when the story has turned to them (give them wants + nextMove), and DEMOTE a principal to regular when it has moved on (give them a routine). This is how a cast breathes; use it.\n4. SITUATION — the 2-3 sentence \"where the player stands now\", rewritten ONLY if this scene actually moved it. Otherwise return null.\nREVERSALS ARE ALLOWED AND WELCOME (this is the one place they can happen):\nA front's driver may turn out to be someone else. A person's wants may turn out to be different from what everyone assumed. A tie may turn out to run the other way.\nThe ONLY constraint: it must be consistent with what the player has actually WITNESSED. Someone the player saw being kind may still have wanted the shop all along — the kindness happened, the motive was never stated. That is a fair reversal. Contradicting something the player saw with their own eyes is not.\nREGISTER — REALISTIC. Nothing you write may escalate beyond social, professional, financial or personal cost.\nNEW CANON — anything introduced this scene that the player MET: people, places, objects, facts. Id + name + one line. If nothing new appeared, an empty list.\nTHE OBJECTIVE (LIFE-GOAL-11) — when <objective> is present you MUST return objectiveVerdict. You have just read the whole scene, so you are the only caller that can tell:\n  \"achieved\"  — the player actually did the thing. Not \"made progress\"; did it.\n  \"overtaken\" — the scene left it behind: it is done FOR them, impossible now, or the story has plainly moved somewhere else. Give objectiveBecause, ONE clause, in fiction (\"the bridge was shut before you could ask\"). The player is SHOWN that sentence, so a reason like \"no longer relevant\" is not one.\n  \"stands\"    — still live and still worth doing. THIS IS THE NORMAL ANSWER; most scenes end with the objective intact.\nAn \"overtaken\" with no objectiveBecause is discarded and read as \"stands\" — a goal that disappears with nothing to show the player is the thing this rule exists to prevent.\nOUTPUT — JSON only, no prose, no fences:\n{\n  \"history\": \"one past-tense line about what CHANGED\",\n  \"clockDeltas\": [{ \"frontId\": \"...\", \"delta\": -2..2, \"reason\": \"one clause\" }],\n  \"castChanges\": [{ \"id\": \"...\", \"standing\": 0, \"wants\": \"...\", \"nextMove\": \"...\", \"limit\": \"...\", \"routine\": \"...\", \"voice\": \"...\", \"tier\": \"principal|regular\", \"wrongAbout\": { \"aboutId\": \"...\", \"believes\": \"...\" } }],\n  \"situation\": \"rewritten only if it moved, else null\",\n  \"newCanon\": [{ \"id\": \"kebab-slug\", \"name\": \"...\", \"kind\": \"person|place|object|fact\", \"note\": \"one line\" }],\n  \"objectiveVerdict\": \"achieved|overtaken|stands\",\n  \"objectiveBecause\": \"one clause, only when overtaken\"\n}",
+    "fantasy": "You are closing a scene in a life simulator and updating the world's state. Answer in English — this is bookkeeping, not storytelling.\nYOUR FOUR JOBS:\n1. HISTORY — one line, past tense, SECOND PERSON (\"You agreed to…\", \"Sofia told you…\"), describing what CHANGED in this scene.\n   The person is fixed and not a stylistic choice: these lines are read back to the player as the story of their own life, in order. A run that says \"I signed the petition\", then \"Marc learned that…\", then \"You discovered…\" is three different narrators over three scenes. Never \"I\", never the player's name — always \"you\".\n   Write what is now different: who decided something, who refused, what was learned, who turned out not to be what they seemed, what was finished or abandoned.\n   Do NOT write that pressure mounted, that time is running short, or that things got worse. A history of escalations is not a story, it is a countdown — and read back over ten scenes it is the single clearest sign this world has gone wrong.\n   Do NOT write the player SUCCEEDING every time either. \"Successfully retrieved… successfully evaded… successfully infiltrated…\" read back is not a story, it is a highlight reel, and it is the same defect facing the other way. Most scenes are partial: they got the thing and were seen doing it; they were let in but not told why; they won the argument and lost the room. Write the cost as well as the gain.\n   If genuinely nothing changed, say so plainly: \"An ordinary morning at the market; nothing moved.\" That is a legitimate and common answer.\n2. CLOCKS — how much closer did each pressure get, if any?\n   **THE NORMAL ANSWER IS AN EMPTY LIST.** Most scenes move nothing. A pressure advances when the player LEFT IT ALONE and it had room to act, or retreats when the player did something about it.\n   You may move a clock by at most 2, and at most 2 across ALL fronts combined. If you find yourself moving every front, you are narrating a countdown rather than reading a scene — pick the one that actually moved and leave the rest.\n   Negative deltas are free and encouraged when the player earned them.\n   Give a one-clause reason for every delta. A delta you cannot justify from the scene log did not happen.\n3. CAST — what CHANGED about these people, and nothing else.\n   Emit a row ONLY for someone this scene actually changed. Leaving a person out is the normal case and is not laziness — it is how the world stays consistent.\n   You may change: standing (how they feel about the player, -3..3), wants, nextMove, limit, routine, voice, tier, ties, wrongAbout.\n   You may NOT change who they are or what the player has already witnessed about them — those fields are not available to you here, deliberately.\n   STANDING is a SLOW axis, and what the rails mean is fixed: 0 is neutral, ±1 is \"warm / cool toward you\", ±2 is \"will go out of their way for you / avoids you\", and ±3 is \"would break a rule for you / will not speak to you again\". ±3 should be reached a handful of times in a whole life, if ever — it is where a relationship ARRIVES, not where it passes through. One scene moves someone one step at most.\n   STANDING SHOULD MOVE BOTH WAYS over a life. Someone who only ever warms to the player is not a person, and someone who only ever cools is a countdown wearing a face.\n   PROMOTE a regular to principal when the story has turned to them (give them wants + nextMove), and DEMOTE a principal to regular when it has moved on (give them a routine). This is how a cast breathes; use it.\n4. SITUATION — the 2-3 sentence \"where the player stands now\", rewritten ONLY if this scene actually moved it. Otherwise return null.\nREVERSALS ARE ALLOWED AND WELCOME (this is the one place they can happen):\nA front's driver may turn out to be someone else. A person's wants may turn out to be different from what everyone assumed. A tie may turn out to run the other way.\nThe ONLY constraint: it must be consistent with what the player has actually WITNESSED. Someone the player saw being kind may still have wanted the shop all along — the kindness happened, the motive was never stated. That is a fair reversal. Contradicting something the player saw with their own eyes is not.\nREGISTER — FANTASY. The world's own rules are the only ceiling.\nNEW CANON — anything introduced this scene that the player MET: people, places, objects, facts. Id + name + one line. If nothing new appeared, an empty list.\nTHE OBJECTIVE (LIFE-GOAL-11) — when <objective> is present you MUST return objectiveVerdict. You have just read the whole scene, so you are the only caller that can tell:\n  \"achieved\"  — the player actually did the thing. Not \"made progress\"; did it.\n  \"overtaken\" — the scene left it behind: it is done FOR them, impossible now, or the story has plainly moved somewhere else. Give objectiveBecause, ONE clause, in fiction (\"the bridge was shut before you could ask\"). The player is SHOWN that sentence, so a reason like \"no longer relevant\" is not one.\n  \"stands\"    — still live and still worth doing. THIS IS THE NORMAL ANSWER; most scenes end with the objective intact.\nAn \"overtaken\" with no objectiveBecause is discarded and read as \"stands\" — a goal that disappears with nothing to show the player is the thing this rule exists to prevent.\nOUTPUT — JSON only, no prose, no fences:\n{\n  \"history\": \"one past-tense line about what CHANGED\",\n  \"clockDeltas\": [{ \"frontId\": \"...\", \"delta\": -2..2, \"reason\": \"one clause\" }],\n  \"castChanges\": [{ \"id\": \"...\", \"standing\": 0, \"wants\": \"...\", \"nextMove\": \"...\", \"limit\": \"...\", \"routine\": \"...\", \"voice\": \"...\", \"tier\": \"principal|regular\", \"wrongAbout\": { \"aboutId\": \"...\", \"believes\": \"...\" } }],\n  \"situation\": \"rewritten only if it moved, else null\",\n  \"newCanon\": [{ \"id\": \"kebab-slug\", \"name\": \"...\", \"kind\": \"person|place|object|fact\", \"note\": \"one line\" }],\n  \"objectiveVerdict\": \"achieved|overtaken|stands\",\n  \"objectiveBecause\": \"one clause, only when overtaken\"\n}"
+  },
+  "sceneOpenSchema": {
+    "type": "OBJECT",
+    "properties": {
+      "title": {
+        "type": "STRING"
+      },
+      "where": {
+        "type": "STRING"
+      },
+      "who": {
+        "type": "ARRAY",
+        "items": {
+          "type": "STRING"
+        }
+      },
+      "subject": {
+        "type": "STRING"
+      },
+      "openQuestion": {
+        "type": "STRING"
+      },
+      "atStake": {
+        "type": "STRING"
+      },
+      "drawsOn": {
+        "type": "ARRAY",
+        "items": {
+          "type": "STRING"
+        }
+      },
+      "signOf": {
+        "type": "STRING"
+      }
+    },
+    "required": [
+      "title",
+      "where",
+      "who",
+      "subject",
+      "openQuestion",
+      "atStake",
+      "drawsOn"
+    ]
+  },
+  "sceneCloseSchema": {
+    "type": "OBJECT",
+    "properties": {
+      "history": {
+        "type": "STRING"
+      },
+      "objectiveVerdict": {
+        "type": "STRING",
+        "enum": [
+          "achieved",
+          "overtaken",
+          "stands"
+        ]
+      },
+      "objectiveBecause": {
+        "type": "STRING"
+      },
+      "clockDeltas": {
+        "type": "ARRAY",
+        "items": {
+          "type": "OBJECT",
+          "properties": {
+            "frontId": {
+              "type": "STRING"
+            },
+            "delta": {
+              "type": "INTEGER"
+            },
+            "reason": {
+              "type": "STRING"
+            }
+          },
+          "required": [
+            "frontId",
+            "delta",
+            "reason"
+          ]
+        }
+      },
+      "castChanges": {
+        "type": "ARRAY",
+        "items": {
+          "type": "OBJECT",
+          "properties": {
+            "id": {
+              "type": "STRING"
+            },
+            "standing": {
+              "type": "INTEGER"
+            },
+            "wants": {
+              "type": "STRING"
+            },
+            "nextMove": {
+              "type": "STRING"
+            },
+            "limit": {
+              "type": "STRING"
+            },
+            "routine": {
+              "type": "STRING"
+            },
+            "voice": {
+              "type": "STRING"
+            },
+            "tier": {
+              "type": "STRING",
+              "enum": [
+                "principal",
+                "regular"
+              ]
+            },
+            "wrongAbout": {
+              "type": "OBJECT",
+              "properties": {
+                "aboutId": {
+                  "type": "STRING"
+                },
+                "believes": {
+                  "type": "STRING"
+                }
+              },
+              "required": [
+                "aboutId",
+                "believes"
+              ]
+            }
+          },
+          "required": [
+            "id"
+          ]
+        }
+      },
+      "situation": {
+        "type": "STRING"
+      },
+      "newCanon": {
+        "type": "ARRAY",
+        "items": {
+          "type": "OBJECT",
+          "properties": {
+            "id": {
+              "type": "STRING"
+            },
+            "name": {
+              "type": "STRING"
+            },
+            "kind": {
+              "type": "STRING"
+            },
+            "note": {
+              "type": "STRING"
+            }
+          },
+          "required": [
+            "id",
+            "name",
+            "kind",
+            "note"
+          ]
+        }
+      }
+    },
+    "required": [
+      "history",
+      "clockDeltas",
+      "castChanges",
+      "newCanon",
+      "objectiveVerdict"
+    ]
+  },
+  "sceneOpenPrompts": {
+    "minimal": {
+      "input": {
+        "characterName": "Marc",
+        "practiceLanguage": "French",
+        "universe": null,
+        "situation": "You have a room over the bakery.",
+        "cast": [],
+        "fronts": [],
+        "canon": [],
+        "history": [],
+        "sceneIndex": 0,
+        "needSign": [],
+        "ironyAvailable": [],
+        "focus": null,
+        "recentSubjects": [],
+        "chapterNumber": 2,
+        "chapterTurns": 0
+      },
+      "out": "<character name=\"Marc\"/>\n\n<situation>You have a room over the bakery.</situation>\n\n<cast>\n\n</cast>\n\n<focus kind=\"ordinary\">This scene belongs to NOBODY'S AMBITION. Nothing anyone wants moves forward in it. Someone needs a hand with something small, or a routine goes wrong, or two people the player knows disagree about nothing much. A life is mostly these, and they are what make the other scenes land — do not smuggle the story in through the back of one.</focus>\n\nOpen scene 1."
+    },
+    "ordinary-focus, sceneIndex 1, arrival stage": {
+      "input": {
+        "characterName": "Marc",
+        "practiceLanguage": "French",
+        "universe": null,
+        "situation": "You have a room over the bakery.",
+        "cast": [
+          {
+            "voice": "warm",
+            "standing": -1,
+            "known": "Opens the shop.",
+            "tier": "regular",
+            "ties": [],
+            "id": "r1",
+            "name": "Sophie",
+            "routine": "opens at five"
+          }
+        ],
+        "fronts": [],
+        "canon": [],
+        "history": [
+          "You arrived."
+        ],
+        "sceneIndex": 1,
+        "needSign": [],
+        "ironyAvailable": [],
+        "focus": null,
+        "recentSubjects": [
+          "the bread delivery"
+        ],
+        "chapterNumber": 1,
+        "chapterTurns": 0
+      },
+      "out": "<character name=\"Marc\"/>\n\n<situation>You have a room over the bakery.</situation>\n\n<whatHasHappened>\n  <line>You arrived.</line>\n</whatHasHappened>\n\n<cast>\n  <person id=\"r1\" name=\"Sophie\" tier=\"regular\" standing=\"-1\"><known>Opens the shop.</known><routine>opens at five</routine></person>\n</cast>\n\n<focus kind=\"ordinary\">This scene belongs to NOBODY'S AMBITION. Nothing anyone wants moves forward in it. Someone needs a hand with something small, or a routine goes wrong, or two people the player knows disagree about nothing much. A life is mostly these, and they are what make the other scenes land — do not smuggle the story in through the back of one.</focus>\n\n<storyStage stage=\"arrival\">This world is at the very beginning of its first chapter. Its subject is ORDINARY: settling in, learning the work, a favour, a meal, a repair, meeting someone properly, getting one small thing right. NOT what any <force> in <inMotion> is driving at — those have not reached the player yet. A scene whose subject is a secret, a threat, a warning or a mystery is the WRONG scene for this stage; rewrite it as something the player could tell a friend about without it sounding like a thriller.</storyStage>\n\n<alreadyBeenAbout>\n  <subject>the bread delivery</subject>\n</alreadyBeenAbout>\n<alreadyBeenAboutRule>Those scenes have happened. This one must be about something ELSE. Learning the same fact again, confirming it, or watching someone restate it is NOT a new subject — if the player already knows it, the scene has nothing to land. A story where every scene is about the same thing reads back as one scene told ten times.</alreadyBeenAboutRule>\n\nOpen scene 2."
+    },
+    "full, stirring stage, sceneIndex 5": {
+      "input": {
+        "characterName": "Marguerite-Anne",
+        "practiceLanguage": "French",
+        "universe": {
+          "setting": "A canal town",
+          "era": "now",
+          "laws": [
+            "No barge moves without a slip.",
+            "Second law"
+          ],
+          "places": [
+            "The wash-house",
+            "The bridge"
+          ],
+          "figures": [
+            {
+              "name": "X",
+              "what": "Y"
+            }
+          ]
+        },
+        "situation": "The roster book is open on the desk.",
+        "cast": [
+          {
+            "voice": "clipped",
+            "standing": 0,
+            "known": "Runs the lock.",
+            "tier": "principal",
+            "ties": [],
+            "id": "p1",
+            "name": "Bébert",
+            "wants": "the roster changed",
+            "nextMove": "corner the clerk",
+            "limit": "nothing in writing"
+          },
+          {
+            "voice": "warm",
+            "standing": -1,
+            "known": "Opens the shop.",
+            "tier": "regular",
+            "ties": [],
+            "id": "r1",
+            "name": "Sophie",
+            "routine": "opens at five"
+          },
+          {
+            "voice": "clipped",
+            "standing": 0,
+            "known": "Runs the lock.",
+            "tier": "principal",
+            "ties": [],
+            "id": "p2",
+            "name": "Marc"
+          }
+        ],
+        "fronts": [
+          {
+            "name": "Front",
+            "driverId": "p1",
+            "kind": "obligation",
+            "scope": "saga",
+            "resolved": null,
+            "clock": {
+              "filled": 5,
+              "size": 8,
+              "consequence": "the lease changes hands",
+              "peak": 5,
+              "unattended": 0,
+              "sinceAdvance": 0
+            },
+            "id": "f1",
+            "agenda": "Bébert is buying the lease."
+          }
+        ],
+        "canon": [
+          {
+            "id": "the-lock",
+            "name": "The lock",
+            "note": "the gate the player fixed",
+            "scenesSince": 4
+          },
+          {
+            "id": "the-book",
+            "name": "The roster book",
+            "note": "always open",
+            "scenesSince": 0
+          }
+        ],
+        "history": [
+          "a",
+          "b",
+          "c",
+          "d",
+          "e",
+          "f",
+          "g",
+          "h"
+        ],
+        "sceneIndex": 5,
+        "needSign": [
+          "f1"
+        ],
+        "ironyAvailable": [
+          {
+            "castId": "p1",
+            "believes": "the crate is safe"
+          }
+        ],
+        "focus": {
+          "castId": "p1",
+          "name": "Bébert"
+        },
+        "recentSubjects": [
+          "s1",
+          "s2",
+          "s3",
+          "s4",
+          "s5",
+          "s6",
+          "s7",
+          "s8"
+        ],
+        "chapterNumber": 1,
+        "chapterTurns": 14
+      },
+      "out": "<character name=\"Marguerite-Anne\"/>\n\n<universe>\n  <setting>A canal town</setting>\n  <law>No barge moves without a slip.</law>\n  <law>Second law</law>\n  <place>The wash-house</place>\n  <place>The bridge</place>\n</universe>\n\n<situation>The roster book is open on the desk.</situation>\n\n<whatHasHappened>\n  <line>c</line>\n  <line>d</line>\n  <line>e</line>\n  <line>f</line>\n  <line>g</line>\n  <line>h</line>\n</whatHasHappened>\n\n<cast>\n  <person id=\"p1\" name=\"Bébert\" tier=\"principal\" standing=\"0\"><known>Runs the lock.</known><wants>the roster changed</wants><nextMove>corner the clerk</nextMove></person>\n  <person id=\"r1\" name=\"Sophie\" tier=\"regular\" standing=\"-1\"><known>Opens the shop.</known><routine>opens at five</routine></person>\n  <person id=\"p2\" name=\"Marc\" tier=\"principal\" standing=\"0\"><known>Runs the lock.</known><wants></wants><nextMove></nextMove></person>\n</cast>\n\n<fronts>\n  <front id=\"f1\" driver=\"p1\">Bébert is buying the lease.</front>\n</fronts>\n\n<makePerceivable>f1</makePerceivable>\n\n<focus castId=\"p1\">This scene turns on Bébert and what THEY are trying to do. They do not have to be the only person present, but the situation should be theirs.</focus>\n\n<storyStage stage=\"stirring\">This world is at the very beginning of its first chapter. Its subject may be the FIRST small, concrete thing the player notices about this world — a discrepancy, an absence, a name that keeps coming up. Not a revelation, and nobody explains it to them.</storyStage>\n\n<alreadyBeenAbout>\n  <subject>s3</subject>\n  <subject>s4</subject>\n  <subject>s5</subject>\n  <subject>s6</subject>\n  <subject>s7</subject>\n  <subject>s8</subject>\n</alreadyBeenAbout>\n<alreadyBeenAboutRule>Those scenes have happened. This one must be about something ELSE. Learning the same fact again, confirming it, or watching someone restate it is NOT a new subject — if the player already knows it, the scene has nothing to land. A story where every scene is about the same thing reads back as one scene told ten times.</alreadyBeenAboutRule>\n\n<ironyAvailable>\n  <person id=\"p1\" stillBelieves=\"the crate is safe\"/>\n</ironyAvailable>\n\n<canon>\n  <entity id=\"the-lock\" name=\"The lock\" scenesSince=\"4\">the gate the player fixed</entity>\n  <entity id=\"the-book\" name=\"The roster book\" scenesSince=\"0\">always open</entity>\n</canon>\n\nOpen scene 6. It MUST draw on something already in <canon> — prefer what has been away longest."
+    },
+    "XML-breaking characters everywhere, settling stage, sceneIndex 2": {
+      "input": {
+        "characterName": "A \"B\" & <C>",
+        "practiceLanguage": "French",
+        "universe": {
+          "setting": "A town of <locks> & gates",
+          "era": "",
+          "laws": [
+            "a < b & c"
+          ],
+          "places": [
+            "The <wash-house>"
+          ],
+          "figures": []
+        },
+        "situation": "a < b & \"c\"",
+        "cast": [
+          {
+            "voice": "clipped",
+            "standing": 0,
+            "known": "Runs the <lock> & gate",
+            "tier": "principal",
+            "ties": [],
+            "id": "p\"1",
+            "name": "Bébert \"the clerk\"",
+            "wants": "A & B",
+            "nextMove": "<move>"
+          },
+          {
+            "voice": "warm",
+            "standing": -1,
+            "known": "Opens the shop.",
+            "tier": "regular",
+            "ties": [],
+            "id": "r<1>",
+            "name": "S&M",
+            "routine": "<routine> & more"
+          }
+        ],
+        "fronts": [
+          {
+            "name": "Front",
+            "driverId": "p\"1",
+            "kind": "obligation",
+            "scope": "saga",
+            "resolved": null,
+            "clock": {
+              "filled": 5,
+              "size": 8,
+              "consequence": "the lease changes hands",
+              "peak": 5,
+              "unattended": 0,
+              "sinceAdvance": 0
+            },
+            "id": "f\"1",
+            "agenda": "A & B <together>"
+          }
+        ],
+        "canon": [
+          {
+            "id": "c&1",
+            "name": "The <lock>",
+            "note": "a & b",
+            "scenesSince": 2
+          }
+        ],
+        "history": [
+          "a < b"
+        ],
+        "sceneIndex": 2,
+        "needSign": [
+          "f\"1",
+          "f2"
+        ],
+        "ironyAvailable": [
+          {
+            "castId": "p\"1",
+            "believes": "it is \"safe\" & fine"
+          }
+        ],
+        "focus": {
+          "castId": "p\"1",
+          "name": "Bébert \"the clerk\""
+        },
+        "recentSubjects": [
+          "a & b"
+        ],
+        "chapterNumber": 1,
+        "chapterTurns": 8
+      },
+      "out": "<character name=\"A &quot;B&quot; &amp; &lt;C&gt;\"/>\n\n<universe>\n  <setting>A town of &lt;locks&gt; &amp; gates</setting>\n  <law>a &lt; b &amp; c</law>\n  <place>The &lt;wash-house&gt;</place>\n</universe>\n\n<situation>a &lt; b &amp; \"c\"</situation>\n\n<whatHasHappened>\n  <line>a &lt; b</line>\n</whatHasHappened>\n\n<cast>\n  <person id=\"p&quot;1\" name=\"Bébert &quot;the clerk&quot;\" tier=\"principal\" standing=\"0\"><known>Runs the &lt;lock&gt; &amp; gate</known><wants>A &amp; B</wants><nextMove>&lt;move&gt;</nextMove></person>\n  <person id=\"r&lt;1&gt;\" name=\"S&amp;M\" tier=\"regular\" standing=\"-1\"><known>Opens the shop.</known><routine>&lt;routine&gt; &amp; more</routine></person>\n</cast>\n\n<fronts>\n  <front id=\"f&quot;1\" driver=\"p&quot;1\">A &amp; B &lt;together&gt;</front>\n</fronts>\n\n<makePerceivable>f&quot;1 f2</makePerceivable>\n\n<focus castId=\"p&quot;1\">This scene turns on Bébert &quot;the clerk&quot; and what THEY are trying to do. They do not have to be the only person present, but the situation should be theirs.</focus>\n\n<storyStage stage=\"settling\">This world is at the very beginning of its first chapter. Its subject is ORDINARY: settling in, learning the work, a favour, a meal, a repair, meeting someone properly, getting one small thing right. NOT what any <force> in <inMotion> is driving at — those have not reached the player yet. A scene whose subject is a secret, a threat, a warning or a mystery is the WRONG scene for this stage; rewrite it as something the player could tell a friend about without it sounding like a thriller.</storyStage>\n\n<alreadyBeenAbout>\n  <subject>a &amp; b</subject>\n</alreadyBeenAbout>\n<alreadyBeenAboutRule>Those scenes have happened. This one must be about something ELSE. Learning the same fact again, confirming it, or watching someone restate it is NOT a new subject — if the player already knows it, the scene has nothing to land. A story where every scene is about the same thing reads back as one scene told ten times.</alreadyBeenAboutRule>\n\n<ironyAvailable>\n  <person id=\"p&quot;1\" stillBelieves=\"it is &quot;safe&quot; &amp; fine\"/>\n</ironyAvailable>\n\n<canon>\n  <entity id=\"c&amp;1\" name=\"The &lt;lock&gt;\" scenesSince=\"2\">a &amp; b</entity>\n</canon>\n\nOpen scene 3. It MUST draw on something already in <canon> — prefer what has been away longest."
+    },
+    "no principals but a focus is null, underway, no stage block": {
+      "input": {
+        "characterName": "Marc",
+        "practiceLanguage": "Japanese",
+        "universe": null,
+        "situation": "",
+        "cast": [
+          {
+            "voice": "warm",
+            "standing": -1,
+            "known": "Opens the shop.",
+            "tier": "regular",
+            "ties": [],
+            "id": "r1",
+            "name": "Sophie"
+          }
+        ],
+        "fronts": [],
+        "canon": [],
+        "history": [],
+        "sceneIndex": 9,
+        "needSign": [],
+        "ironyAvailable": [],
+        "focus": null,
+        "recentSubjects": [],
+        "chapterNumber": 3,
+        "chapterTurns": 40
+      },
+      "out": "<character name=\"Marc\"/>\n\n<situation></situation>\n\n<cast>\n  <person id=\"r1\" name=\"Sophie\" tier=\"regular\" standing=\"-1\"><known>Opens the shop.</known><routine></routine></person>\n</cast>\n\n<focus kind=\"ordinary\">This scene belongs to NOBODY'S AMBITION. Nothing anyone wants moves forward in it. Someone needs a hand with something small, or a routine goes wrong, or two people the player knows disagree about nothing much. A life is mostly these, and they are what make the other scenes land — do not smuggle the story in through the back of one.</focus>\n\nOpen scene 10. It MUST draw on something already in <canon> — prefer what has been away longest."
+    },
+    "stage boundary: chapterTurns 5 (last arrival turn)": {
+      "input": {
+        "characterName": "Marc",
+        "practiceLanguage": "French",
+        "universe": null,
+        "situation": "You have a room over the bakery.",
+        "cast": [],
+        "fronts": [],
+        "canon": [],
+        "history": [],
+        "sceneIndex": 0,
+        "needSign": [],
+        "ironyAvailable": [],
+        "focus": null,
+        "recentSubjects": [],
+        "chapterNumber": 1,
+        "chapterTurns": 5
+      },
+      "out": "<character name=\"Marc\"/>\n\n<situation>You have a room over the bakery.</situation>\n\n<cast>\n\n</cast>\n\n<focus kind=\"ordinary\">This scene belongs to NOBODY'S AMBITION. Nothing anyone wants moves forward in it. Someone needs a hand with something small, or a routine goes wrong, or two people the player knows disagree about nothing much. A life is mostly these, and they are what make the other scenes land — do not smuggle the story in through the back of one.</focus>\n\n<storyStage stage=\"arrival\">This world is at the very beginning of its first chapter. Its subject is ORDINARY: settling in, learning the work, a favour, a meal, a repair, meeting someone properly, getting one small thing right. NOT what any <force> in <inMotion> is driving at — those have not reached the player yet. A scene whose subject is a secret, a threat, a warning or a mystery is the WRONG scene for this stage; rewrite it as something the player could tell a friend about without it sounding like a thriller.</storyStage>\n\nOpen scene 1."
+    },
+    "stage boundary: chapterTurns 6 (first settling turn)": {
+      "input": {
+        "characterName": "Marc",
+        "practiceLanguage": "French",
+        "universe": null,
+        "situation": "You have a room over the bakery.",
+        "cast": [],
+        "fronts": [],
+        "canon": [],
+        "history": [],
+        "sceneIndex": 0,
+        "needSign": [],
+        "ironyAvailable": [],
+        "focus": null,
+        "recentSubjects": [],
+        "chapterNumber": 1,
+        "chapterTurns": 6
+      },
+      "out": "<character name=\"Marc\"/>\n\n<situation>You have a room over the bakery.</situation>\n\n<cast>\n\n</cast>\n\n<focus kind=\"ordinary\">This scene belongs to NOBODY'S AMBITION. Nothing anyone wants moves forward in it. Someone needs a hand with something small, or a routine goes wrong, or two people the player knows disagree about nothing much. A life is mostly these, and they are what make the other scenes land — do not smuggle the story in through the back of one.</focus>\n\n<storyStage stage=\"settling\">This world is at the very beginning of its first chapter. Its subject is ORDINARY: settling in, learning the work, a favour, a meal, a repair, meeting someone properly, getting one small thing right. NOT what any <force> in <inMotion> is driving at — those have not reached the player yet. A scene whose subject is a secret, a threat, a warning or a mystery is the WRONG scene for this stage; rewrite it as something the player could tell a friend about without it sounding like a thriller.</storyStage>\n\nOpen scene 1."
+    },
+    "stage boundary: chapterTurns 12 (last settling turn)": {
+      "input": {
+        "characterName": "Marc",
+        "practiceLanguage": "French",
+        "universe": null,
+        "situation": "You have a room over the bakery.",
+        "cast": [],
+        "fronts": [],
+        "canon": [],
+        "history": [],
+        "sceneIndex": 0,
+        "needSign": [],
+        "ironyAvailable": [],
+        "focus": null,
+        "recentSubjects": [],
+        "chapterNumber": 1,
+        "chapterTurns": 12
+      },
+      "out": "<character name=\"Marc\"/>\n\n<situation>You have a room over the bakery.</situation>\n\n<cast>\n\n</cast>\n\n<focus kind=\"ordinary\">This scene belongs to NOBODY'S AMBITION. Nothing anyone wants moves forward in it. Someone needs a hand with something small, or a routine goes wrong, or two people the player knows disagree about nothing much. A life is mostly these, and they are what make the other scenes land — do not smuggle the story in through the back of one.</focus>\n\n<storyStage stage=\"settling\">This world is at the very beginning of its first chapter. Its subject is ORDINARY: settling in, learning the work, a favour, a meal, a repair, meeting someone properly, getting one small thing right. NOT what any <force> in <inMotion> is driving at — those have not reached the player yet. A scene whose subject is a secret, a threat, a warning or a mystery is the WRONG scene for this stage; rewrite it as something the player could tell a friend about without it sounding like a thriller.</storyStage>\n\nOpen scene 1."
+    },
+    "stage boundary: chapterTurns 13 (first stirring turn)": {
+      "input": {
+        "characterName": "Marc",
+        "practiceLanguage": "French",
+        "universe": null,
+        "situation": "You have a room over the bakery.",
+        "cast": [],
+        "fronts": [],
+        "canon": [],
+        "history": [],
+        "sceneIndex": 0,
+        "needSign": [],
+        "ironyAvailable": [],
+        "focus": null,
+        "recentSubjects": [],
+        "chapterNumber": 1,
+        "chapterTurns": 13
+      },
+      "out": "<character name=\"Marc\"/>\n\n<situation>You have a room over the bakery.</situation>\n\n<cast>\n\n</cast>\n\n<focus kind=\"ordinary\">This scene belongs to NOBODY'S AMBITION. Nothing anyone wants moves forward in it. Someone needs a hand with something small, or a routine goes wrong, or two people the player knows disagree about nothing much. A life is mostly these, and they are what make the other scenes land — do not smuggle the story in through the back of one.</focus>\n\n<storyStage stage=\"stirring\">This world is at the very beginning of its first chapter. Its subject may be the FIRST small, concrete thing the player notices about this world — a discrepancy, an absence, a name that keeps coming up. Not a revelation, and nobody explains it to them.</storyStage>\n\nOpen scene 1."
+    },
+    "stage boundary: chapterTurns 20 (last stirring turn)": {
+      "input": {
+        "characterName": "Marc",
+        "practiceLanguage": "French",
+        "universe": null,
+        "situation": "You have a room over the bakery.",
+        "cast": [],
+        "fronts": [],
+        "canon": [],
+        "history": [],
+        "sceneIndex": 0,
+        "needSign": [],
+        "ironyAvailable": [],
+        "focus": null,
+        "recentSubjects": [],
+        "chapterNumber": 1,
+        "chapterTurns": 20
+      },
+      "out": "<character name=\"Marc\"/>\n\n<situation>You have a room over the bakery.</situation>\n\n<cast>\n\n</cast>\n\n<focus kind=\"ordinary\">This scene belongs to NOBODY'S AMBITION. Nothing anyone wants moves forward in it. Someone needs a hand with something small, or a routine goes wrong, or two people the player knows disagree about nothing much. A life is mostly these, and they are what make the other scenes land — do not smuggle the story in through the back of one.</focus>\n\n<storyStage stage=\"stirring\">This world is at the very beginning of its first chapter. Its subject may be the FIRST small, concrete thing the player notices about this world — a discrepancy, an absence, a name that keeps coming up. Not a revelation, and nobody explains it to them.</storyStage>\n\nOpen scene 1."
+    },
+    "stage boundary: chapterTurns 21 (first underway turn)": {
+      "input": {
+        "characterName": "Marc",
+        "practiceLanguage": "French",
+        "universe": null,
+        "situation": "You have a room over the bakery.",
+        "cast": [],
+        "fronts": [],
+        "canon": [],
+        "history": [],
+        "sceneIndex": 0,
+        "needSign": [],
+        "ironyAvailable": [],
+        "focus": null,
+        "recentSubjects": [],
+        "chapterNumber": 1,
+        "chapterTurns": 21
+      },
+      "out": "<character name=\"Marc\"/>\n\n<situation>You have a room over the bakery.</situation>\n\n<cast>\n\n</cast>\n\n<focus kind=\"ordinary\">This scene belongs to NOBODY'S AMBITION. Nothing anyone wants moves forward in it. Someone needs a hand with something small, or a routine goes wrong, or two people the player knows disagree about nothing much. A life is mostly these, and they are what make the other scenes land — do not smuggle the story in through the back of one.</focus>\n\nOpen scene 1."
+    },
+    "stage: chapter fields ABSENT (defaults to arrival)": {
+      "input": {
+        "characterName": "Marc",
+        "practiceLanguage": "French",
+        "universe": null,
+        "situation": "You have a room over the bakery.",
+        "cast": [],
+        "fronts": [],
+        "canon": [],
+        "history": [],
+        "sceneIndex": 0,
+        "needSign": [],
+        "ironyAvailable": [],
+        "focus": null,
+        "recentSubjects": []
+      },
+      "out": "<character name=\"Marc\"/>\n\n<situation>You have a room over the bakery.</situation>\n\n<cast>\n\n</cast>\n\n<focus kind=\"ordinary\">This scene belongs to NOBODY'S AMBITION. Nothing anyone wants moves forward in it. Someone needs a hand with something small, or a routine goes wrong, or two people the player knows disagree about nothing much. A life is mostly these, and they are what make the other scenes land — do not smuggle the story in through the back of one.</focus>\n\n<storyStage stage=\"arrival\">This world is at the very beginning of its first chapter. Its subject is ORDINARY: settling in, learning the work, a favour, a meal, a repair, meeting someone properly, getting one small thing right. NOT what any <force> in <inMotion> is driving at — those have not reached the player yet. A scene whose subject is a secret, a threat, a warning or a mystery is the WRONG scene for this stage; rewrite it as something the player could tell a friend about without it sounding like a thriller.</storyStage>\n\nOpen scene 1."
+    },
+    "recentSubjects holding empty strings (distinguishes filter(Boolean))": {
+      "input": {
+        "characterName": "Marc",
+        "practiceLanguage": "French",
+        "universe": null,
+        "situation": "You have a room over the bakery.",
+        "cast": [],
+        "fronts": [],
+        "canon": [],
+        "history": [],
+        "sceneIndex": 0,
+        "needSign": [],
+        "ironyAvailable": [],
+        "focus": null,
+        "recentSubjects": [
+          "",
+          "the lease",
+          "",
+          "",
+          "",
+          "",
+          "",
+          ""
+        ],
+        "chapterNumber": 2
+      },
+      "out": "<character name=\"Marc\"/>\n\n<situation>You have a room over the bakery.</situation>\n\n<cast>\n\n</cast>\n\n<focus kind=\"ordinary\">This scene belongs to NOBODY'S AMBITION. Nothing anyone wants moves forward in it. Someone needs a hand with something small, or a routine goes wrong, or two people the player knows disagree about nothing much. A life is mostly these, and they are what make the other scenes land — do not smuggle the story in through the back of one.</focus>\n\nOpen scene 1."
+    },
+    "recentSubjects ALL empty (the block must vanish, not render empty)": {
+      "input": {
+        "characterName": "Marc",
+        "practiceLanguage": "French",
+        "universe": null,
+        "situation": "You have a room over the bakery.",
+        "cast": [],
+        "fronts": [],
+        "canon": [],
+        "history": [],
+        "sceneIndex": 0,
+        "needSign": [],
+        "ironyAvailable": [],
+        "focus": null,
+        "recentSubjects": [
+          "",
+          "",
+          ""
+        ],
+        "chapterNumber": 2
+      },
+      "out": "<character name=\"Marc\"/>\n\n<situation>You have a room over the bakery.</situation>\n\n<cast>\n\n</cast>\n\n<focus kind=\"ordinary\">This scene belongs to NOBODY'S AMBITION. Nothing anyone wants moves forward in it. Someone needs a hand with something small, or a routine goes wrong, or two people the player knows disagree about nothing much. A life is mostly these, and they are what make the other scenes land — do not smuggle the story in through the back of one.</focus>\n\nOpen scene 1."
+    }
+  },
+  "sceneClosePrompts": {
+    "minimal, no fronts, no objective": {
+      "input": {
+        "sceneLog": [
+          "You: hello"
+        ],
+        "subject": "the missing crate",
+        "atStake": "the contract",
+        "cast": [],
+        "fronts": [],
+        "realistic": true
+      },
+      "out": "<scene subject=\"the missing crate\" atStake=\"the contract\"/>\n\n<whatHappened>\n  <beat>You: hello</beat>\n</whatHappened>\n\n<cast>\n\n</cast>\n\nClose the scene. Remember: an empty clockDeltas list is the normal answer."
+    },
+    "objective present, mixed cast, one front": {
+      "input": {
+        "sceneLog": [
+          "You: hello",
+          "Sophie: bonjour"
+        ],
+        "subject": "the missing crate",
+        "atStake": "Marc loses the contract",
+        "cast": [
+          {
+            "voice": "clipped",
+            "standing": 0,
+            "known": "Runs the lock.",
+            "tier": "principal",
+            "ties": [],
+            "id": "p1",
+            "name": "Bébert",
+            "wants": "the roster changed",
+            "nextMove": "corner the clerk"
+          },
+          {
+            "voice": "warm",
+            "standing": -1,
+            "known": "Opens the shop.",
+            "tier": "regular",
+            "ties": [],
+            "id": "r1",
+            "name": "Sophie",
+            "routine": "opens at five"
+          }
+        ],
+        "fronts": [
+          {
+            "name": "Front",
+            "driverId": "p1",
+            "kind": "obligation",
+            "scope": "saga",
+            "resolved": null,
+            "clock": {
+              "filled": 5,
+              "size": 8,
+              "consequence": "the lease changes hands",
+              "peak": 5,
+              "unattended": 0,
+              "sinceAdvance": 0
+            },
+            "id": "f1",
+            "agenda": "Bébert is buying the lease."
+          }
+        ],
+        "realistic": true,
+        "objective": {
+          "id": "o1",
+          "text": "get Vic to admit the pylon is failing"
+        }
+      },
+      "out": "<scene subject=\"the missing crate\" atStake=\"Marc loses the contract\"/>\n\n<whatHappened>\n  <beat>You: hello</beat>\n  <beat>Sophie: bonjour</beat>\n</whatHappened>\n\n<cast>\n  <person id=\"p1\" name=\"Bébert\" tier=\"principal\" standing=\"0\"><wants>the roster changed</wants><nextMove>corner the clerk</nextMove></person>\n  <person id=\"r1\" name=\"Sophie\" tier=\"regular\" standing=\"-1\"><routine>opens at five</routine></person>\n</cast>\n\n<fronts>\n  <front id=\"f1\" kind=\"obligation\" at=\"5/8\" driver=\"p1\"><agenda>Bébert is buying the lease.</agenda><ifItFills>the lease changes hands</ifItFills></front>\n</fronts>\n\n<objective id=\"o1\">get Vic to admit the pylon is failing</objective>\n\nClose the scene. Remember: an empty clockDeltas list is the normal answer, and \"stands\" is the normal objectiveVerdict."
+    },
+    "fantasy register": {
+      "input": {
+        "sceneLog": [
+          "You: hello"
+        ],
+        "subject": "s",
+        "atStake": "a",
+        "cast": [],
+        "fronts": [],
+        "realistic": false,
+        "objective": null
+      },
+      "out": "<scene subject=\"s\" atStake=\"a\"/>\n\n<whatHappened>\n  <beat>You: hello</beat>\n</whatHappened>\n\n<cast>\n\n</cast>\n\nClose the scene. Remember: an empty clockDeltas list is the normal answer."
+    },
+    "long scene log, past the 24 slice": {
+      "input": {
+        "sceneLog": [
+          "You: line 0",
+          "You: line 1",
+          "You: line 2",
+          "You: line 3",
+          "You: line 4",
+          "You: line 5",
+          "You: line 6",
+          "You: line 7",
+          "You: line 8",
+          "You: line 9",
+          "You: line 10",
+          "You: line 11",
+          "You: line 12",
+          "You: line 13",
+          "You: line 14",
+          "You: line 15",
+          "You: line 16",
+          "You: line 17",
+          "You: line 18",
+          "You: line 19",
+          "You: line 20",
+          "You: line 21",
+          "You: line 22",
+          "You: line 23",
+          "You: line 24",
+          "You: line 25",
+          "You: line 26",
+          "You: line 27",
+          "You: line 28",
+          "You: line 29",
+          "You: line 30",
+          "You: line 31",
+          "You: line 32",
+          "You: line 33",
+          "You: line 34",
+          "You: line 35",
+          "You: line 36",
+          "You: line 37",
+          "You: line 38",
+          "You: line 39"
+        ],
+        "subject": "s",
+        "atStake": "a",
+        "cast": [
+          {
+            "voice": "clipped",
+            "standing": 0,
+            "known": "Runs the lock.",
+            "tier": "principal",
+            "ties": [],
+            "id": "p1",
+            "name": "B"
+          }
+        ],
+        "fronts": [],
+        "realistic": true
+      },
+      "out": "<scene subject=\"s\" atStake=\"a\"/>\n\n<whatHappened>\n  <beat>You: line 16</beat>\n  <beat>You: line 17</beat>\n  <beat>You: line 18</beat>\n  <beat>You: line 19</beat>\n  <beat>You: line 20</beat>\n  <beat>You: line 21</beat>\n  <beat>You: line 22</beat>\n  <beat>You: line 23</beat>\n  <beat>You: line 24</beat>\n  <beat>You: line 25</beat>\n  <beat>You: line 26</beat>\n  <beat>You: line 27</beat>\n  <beat>You: line 28</beat>\n  <beat>You: line 29</beat>\n  <beat>You: line 30</beat>\n  <beat>You: line 31</beat>\n  <beat>You: line 32</beat>\n  <beat>You: line 33</beat>\n  <beat>You: line 34</beat>\n  <beat>You: line 35</beat>\n  <beat>You: line 36</beat>\n  <beat>You: line 37</beat>\n  <beat>You: line 38</beat>\n  <beat>You: line 39</beat>\n</whatHappened>\n\n<cast>\n  <person id=\"p1\" name=\"B\" tier=\"principal\" standing=\"0\"><wants></wants><nextMove></nextMove></person>\n</cast>\n\nClose the scene. Remember: an empty clockDeltas list is the normal answer."
+    },
+    "scene log EXACTLY at the 24 slice": {
+      "input": {
+        "sceneLog": [
+          "You: line 0",
+          "You: line 1",
+          "You: line 2",
+          "You: line 3",
+          "You: line 4",
+          "You: line 5",
+          "You: line 6",
+          "You: line 7",
+          "You: line 8",
+          "You: line 9",
+          "You: line 10",
+          "You: line 11",
+          "You: line 12",
+          "You: line 13",
+          "You: line 14",
+          "You: line 15",
+          "You: line 16",
+          "You: line 17",
+          "You: line 18",
+          "You: line 19",
+          "You: line 20",
+          "You: line 21",
+          "You: line 22",
+          "You: line 23"
+        ],
+        "subject": "s",
+        "atStake": "a",
+        "cast": [],
+        "fronts": [],
+        "realistic": true
+      },
+      "out": "<scene subject=\"s\" atStake=\"a\"/>\n\n<whatHappened>\n  <beat>You: line 0</beat>\n  <beat>You: line 1</beat>\n  <beat>You: line 2</beat>\n  <beat>You: line 3</beat>\n  <beat>You: line 4</beat>\n  <beat>You: line 5</beat>\n  <beat>You: line 6</beat>\n  <beat>You: line 7</beat>\n  <beat>You: line 8</beat>\n  <beat>You: line 9</beat>\n  <beat>You: line 10</beat>\n  <beat>You: line 11</beat>\n  <beat>You: line 12</beat>\n  <beat>You: line 13</beat>\n  <beat>You: line 14</beat>\n  <beat>You: line 15</beat>\n  <beat>You: line 16</beat>\n  <beat>You: line 17</beat>\n  <beat>You: line 18</beat>\n  <beat>You: line 19</beat>\n  <beat>You: line 20</beat>\n  <beat>You: line 21</beat>\n  <beat>You: line 22</beat>\n  <beat>You: line 23</beat>\n</whatHappened>\n\n<cast>\n\n</cast>\n\nClose the scene. Remember: an empty clockDeltas list is the normal answer."
+    },
+    "principal and regular with NO optional fields (the empty-tag branch)": {
+      "input": {
+        "sceneLog": [
+          "You: hello"
+        ],
+        "subject": "s",
+        "atStake": "a",
+        "cast": [
+          {
+            "voice": "clipped",
+            "standing": 0,
+            "known": "Runs the lock.",
+            "tier": "principal",
+            "ties": [],
+            "id": "p1",
+            "name": "B"
+          },
+          {
+            "voice": "warm",
+            "standing": -1,
+            "known": "Opens the shop.",
+            "tier": "regular",
+            "ties": [],
+            "id": "r1",
+            "name": "S"
+          }
+        ],
+        "fronts": [],
+        "realistic": true
+      },
+      "out": "<scene subject=\"s\" atStake=\"a\"/>\n\n<whatHappened>\n  <beat>You: hello</beat>\n</whatHappened>\n\n<cast>\n  <person id=\"p1\" name=\"B\" tier=\"principal\" standing=\"0\"><wants></wants><nextMove></nextMove></person>\n  <person id=\"r1\" name=\"S\" tier=\"regular\" standing=\"-1\"><routine></routine></person>\n</cast>\n\nClose the scene. Remember: an empty clockDeltas list is the normal answer."
+    },
+    "two fronts, different kinds and clock positions": {
+      "input": {
+        "sceneLog": [
+          "You: hello"
+        ],
+        "subject": "s",
+        "atStake": "a",
+        "cast": [],
+        "realistic": true,
+        "fronts": [
+          {
+            "name": "Front",
+            "driverId": "p1",
+            "kind": "threat",
+            "scope": "saga",
+            "resolved": null,
+            "clock": {
+              "filled": 0,
+              "size": 4,
+              "consequence": "c1",
+              "peak": 0,
+              "unattended": 0,
+              "sinceAdvance": 0
+            },
+            "id": "f1",
+            "agenda": "A."
+          },
+          {
+            "name": "Front",
+            "driverId": "circumstance",
+            "kind": "decay",
+            "scope": "saga",
+            "resolved": null,
+            "clock": {
+              "filled": 11,
+              "size": 12,
+              "consequence": "c2",
+              "peak": 11,
+              "unattended": 3,
+              "sinceAdvance": 1
+            },
+            "id": "f2",
+            "agenda": "B."
+          }
+        ]
+      },
+      "out": "<scene subject=\"s\" atStake=\"a\"/>\n\n<whatHappened>\n  <beat>You: hello</beat>\n</whatHappened>\n\n<cast>\n\n</cast>\n\n<fronts>\n  <front id=\"f1\" kind=\"threat\" at=\"0/4\" driver=\"p1\"><agenda>A.</agenda><ifItFills>c1</ifItFills></front>\n  <front id=\"f2\" kind=\"decay\" at=\"11/12\" driver=\"circumstance\"><agenda>B.</agenda><ifItFills>c2</ifItFills></front>\n</fronts>\n\nClose the scene. Remember: an empty clockDeltas list is the normal answer."
+    },
+    "XML-breaking characters everywhere": {
+      "input": {
+        "sceneLog": [
+          "You: a < b & \"c\""
+        ],
+        "subject": "s & <ubject>",
+        "atStake": "a \"stake\" & more",
+        "cast": [
+          {
+            "voice": "clipped",
+            "standing": 0,
+            "known": "Runs the lock.",
+            "tier": "principal",
+            "ties": [],
+            "id": "p\"1",
+            "name": "B&B",
+            "wants": "<wants>",
+            "nextMove": "a & b"
+          },
+          {
+            "voice": "warm",
+            "standing": -1,
+            "known": "Opens the shop.",
+            "tier": "regular",
+            "ties": [],
+            "id": "r<1>",
+            "name": "S\"S",
+            "routine": "<r> & <s>"
+          }
+        ],
+        "fronts": [
+          {
+            "name": "Front",
+            "driverId": "p\"1",
+            "kind": "obligation",
+            "scope": "saga",
+            "resolved": null,
+            "clock": {
+              "filled": 2,
+              "size": 6,
+              "consequence": "the <lease> & the keys",
+              "peak": 2,
+              "unattended": 0,
+              "sinceAdvance": 0
+            },
+            "id": "f\"1",
+            "agenda": "A & B <together>"
+          }
+        ],
+        "realistic": true,
+        "objective": {
+          "id": "o\"1",
+          "text": "get \"it\" & keep it"
+        }
+      },
+      "out": "<scene subject=\"s &amp; &lt;ubject&gt;\" atStake=\"a &quot;stake&quot; &amp; more\"/>\n\n<whatHappened>\n  <beat>You: a &lt; b &amp; \"c\"</beat>\n</whatHappened>\n\n<cast>\n  <person id=\"p&quot;1\" name=\"B&amp;B\" tier=\"principal\" standing=\"0\"><wants>&lt;wants&gt;</wants><nextMove>a &amp; b</nextMove></person>\n  <person id=\"r&lt;1&gt;\" name=\"S&quot;S\" tier=\"regular\" standing=\"-1\"><routine>&lt;r&gt; &amp; &lt;s&gt;</routine></person>\n</cast>\n\n<fronts>\n  <front id=\"f&quot;1\" kind=\"obligation\" at=\"2/6\" driver=\"p&quot;1\"><agenda>A &amp; B &lt;together&gt;</agenda><ifItFills>the &lt;lease&gt; &amp; the keys</ifItFills></front>\n</fronts>\n\n<objective id=\"o&quot;1\">get \"it\" &amp; keep it</objective>\n\nClose the scene. Remember: an empty clockDeltas list is the normal answer, and \"stands\" is the normal objectiveVerdict."
+    }
+  }
+}

@@ -1,0 +1,908 @@
+---
+import Layout from '../layouts/Layout.astro';
+import SiteHeader from '../components/marketing/SiteHeader.astro';
+import LanguagesDialog from '../components/marketing/LanguagesDialog.astro';
+import ConversationDemo from '../components/demo/ConversationDemo.tsx';
+import WurldsDemo from '../components/demo/WurldsDemo.tsx';
+import { SUPPORTED_LANGUAGES } from '../data/languages';
+
+const APP_URL = 'https://app.wurld.chat';
+
+const features = [
+  {
+    title: 'No extra time needed',
+    desc: "You're already messaging friends. Wurld turns that into language practice without adding to your day.",
+    color: '#7340f5',
+    svg: '<circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 14"/>',
+  },
+  {
+    title: 'Language immersion',
+    desc: 'The best learning comes from living the language. Mistakes become lessons — so they really stick.',
+    color: '#db53d7',
+    svg: '<path d="M12 3l1.9 4.6L18.5 9l-4.6 1.9L12 15l-1.9-4.1L5.5 9l4.6-1.4L12 3z"/><path d="M19 14l.8 2 2 .8-2 .8-.8 2-.8-2-2-.8 2-.8.8-2z"/>',
+  },
+  {
+    title: 'Vocabulary you actually need',
+    desc: 'Still stuck on "I have two sisters"? Learn the things you actually talk about.',
+    color: '#2bb6b0',
+    svg: '<path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/>',
+  },
+  {
+    title: 'Healthier phone use',
+    desc: 'No addictive algorithms. Spend time on your phone meaningfully.',
+    color: '#f5577d',
+    svg: '<path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 1 0-7.78 7.78L12 21.23l8.84-8.84a5.5 5.5 0 0 0 0-7.78z"/>',
+  },
+];
+
+const plans = [
+  {
+    name: 'Free',
+    price: '$0',
+    period: '/month',
+    pro: false,
+    features: [
+      'Unlimited messaging',
+      'Native language translation',
+      'All chat features',
+      'Smart grammar corrections',
+    ],
+  },
+  {
+    name: 'Pro',
+    price: '$0',
+    period: '/month',
+    pro: true,
+    features: [
+      'Everything in Free',
+      'Wurlds — immersive role-play',
+      'Practice language mode',
+      'Word-by-word explanations',
+    ],
+  },
+];
+
+// Wurlds section — the three points are lifted from the app's own
+// "How wurlds work" explainer (LifeOverviewExplainer) so the site and the
+// app describe the feature in the same words.
+const wurldsPoints = [
+  {
+    title: 'Chapters, not lessons',
+    desc: 'Each wurld unfolds in chapters that thread across sessions.',
+    svg: '<path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>',
+  },
+  {
+    title: 'People who remember you',
+    desc: 'Characters you build a relationship with come back. Others drift out of touch.',
+    svg: '<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>',
+  },
+  {
+    title: 'Describe anything. Do anything.',
+    desc: 'Set it wherever you like, then say and do whatever you want. No script to follow.',
+    svg: '<path d="M15 4V2"/><path d="M15 16v-2"/><path d="M8 9h2"/><path d="M20 9h2"/><path d="M17.8 11.8 19 13"/><path d="M17.8 6.2 19 5"/><path d="m3 21 9-9"/><path d="M12.2 6.2 11 5"/>',
+  },
+  {
+    title: 'Grounded or Adventurous',
+    desc: 'Rehearse a flat viewing or a first day at work. Or be a detective in 1940s Buenos Aires.',
+    svg: '<circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>',
+  },
+];
+
+const langCount = SUPPORTED_LANGUAGES.length;
+// Marquee is decorative — show a UNIQUE set of real flags. Drop non-flag glyphs
+// (e.g. the globe for "Spanish (Latin America)") and de-dupe flags shared by
+// multiple languages (many use 🇮🇳 / 🇪🇸). The dialog still lists every language.
+const seenFlags = new Set<string>();
+const flagLangs = SUPPORTED_LANGUAGES.filter((l) => {
+  const isFlag = /\p{Regional_Indicator}/u.test(l.flag) || l.flag.includes('\u{1F3F4}');
+  if (!isFlag || seenFlags.has(l.flag)) return false;
+  seenFlags.add(l.flag);
+  return true;
+});
+const marqueeFlags = [...flagLangs, ...flagLangs];
+---
+
+<Layout path="/">
+  <SiteHeader />
+
+  <main>
+    {/* ---- Hero ---- */}
+    <section class="section hero">
+      <h1>Learn a language<br />without trying.</h1>
+      <p class="lede">
+        Just message your friends. Wurld teaches you the words and phrases you actually
+        need — while you chat.
+      </p>
+      <div class="hero-cta-row">
+        <a class="cta cta-secondary" href="#get">⚡ Get started</a>
+      </div>
+    </section>
+
+    {/* ---- Flag marquee ---- */}
+    <div class="marquee-outer">
+      <div class="marquee-track">
+        {marqueeFlags.map((l, i) => (
+          <span class="marquee-flag" aria-hidden={i >= SUPPORTED_LANGUAGES.length ? 'true' : 'false'}>{l.flag}</span>
+        ))}
+      </div>
+    </div>
+
+    {/* ---- Language hook ---- */}
+    <section class="section hook">
+      <p class="hook-lead">You pick your language. They pick theirs.</p>
+      <p class="lede">Wurld handles the rest.</p>
+    </section>
+
+    {/* ---- Demo band ---- */}
+    <div class="demo-band">
+      <div class="section demo-section">
+        <p class="eyebrow center">EXAMPLE</p>
+        <ConversationDemo client:only="react" />
+      </div>
+    </div>
+
+    {/* ---- Features ---- */}
+    <section class="section features-section">
+      <p class="eyebrow">WHY IT WORKS</p>
+      <h2>Language learning that fits your life</h2>
+      <div class="feature-grid">
+        {features.map((f) => (
+          <article class="feature-card">
+            <span class="feature-icon" style={`color:${f.color}`}>
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" set:html={f.svg}></svg>
+            </span>
+            <h3>{f.title}</h3>
+            <p>{f.desc}</p>
+          </article>
+        ))}
+      </div>
+    </section>
+
+    {/* ---- Vocabulary ----
+         Still part of the "no extra time" story: collection is passive, a
+         by-product of chatting. This is where "vocabulary you actually need"
+         (touched on in the features grid) gets its full argument. */}
+    <section class="section vocab-section">
+      <div class="split split--media-right">
+        <div class="section-copy">
+          <p class="eyebrow">VOCABULARY</p>
+          <h2>Your vocabulary builds itself.</h2>
+          <p>
+            Tap anything you don't know in a chat — a word, or the whole phrase — and
+            it's saved. Your deck builds itself out of conversations you're already
+            having.
+          </p>
+          <details class="more">
+            <summary>Why that beats a stock deck</summary>
+            <p>
+              Nothing to download, nothing to curate. Because the words come from your own
+              conversations, they're the ones you'll actually use — what your friends
+              really say, about the things you really talk about. Not "the cat sits on the
+              table", but the phrase you'll want on Tuesday. Review them whenever you feel
+              like it, or don't. They'll keep.
+            </p>
+          </details>
+        </div>
+
+        {/* A flashcard, not a question — this section is about collecting. */}
+        <div class="split-media card-stack">
+          <div class="card-ghost card-ghost--far"></div>
+          <div class="card-ghost card-ghost--near"></div>
+          <div class="q-card">
+            <p class="q-instruction">Saved from your chat</p>
+            <p class="f-phrase">¿Quedamos a las ocho?</p>
+            <p class="f-native">Shall we meet at eight?</p>
+            <p class="q-meta">Carlos · Tuesday · 128 cards collected</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    {/* ---- Extra time ----
+         The change of pace, and the hinge of the whole page: everything above
+         costs no time, this is what happens when you choose to spend some.
+
+         ⚠️ Practice sessions ARE built from the saved deck. Wurlds are NOT —
+         they don't draw on your cards today. What both halves genuinely share
+         is the other direction: words you meet in either one can be saved, and
+         land in the same deck. Keep every claim pointing that way. Do not write
+         "built from your cards" anywhere in the role-play half. */}
+    <div class="wurlds-band">
+      <section class="section extra-section">
+        {/* Title left, lead right on desktop — a single left column left half
+            the band empty, and the lead needs to announce that two halves
+            follow, or they read as unrelated. */}
+        <div class="band-intro">
+          <h2 class="band-title">And when you <em>do</em> have a bit of extra time…</h2>
+          <p class="band-lead">
+            Everything so far costs you nothing. But some days you've got twenty minutes
+            and you want to spend them well. Two ways to do that — and whatever you pick
+            up along the way lands in the same deck.
+          </p>
+        </div>
+
+        {/* Half one: dedicated practice */}
+        <div class="half">
+        <div class="split split--media-left">
+          <div class="section-copy">
+            <p class="eyebrow">PRACTICE SESSIONS</p>
+            <h3 class="sub-heading">Built from your cards, not someone else's syllabus.</h3>
+            <p>
+              Every session is planned around your deck — weakest topics first, cards that
+              are due, whatever you got wrong last time.
+            </p>
+            <details class="more">
+              <summary>What's in a session</summary>
+              <p>
+                Seven question types keep it from going stale: multiple choice, listening,
+                fill-the-blank, matching, translation. Get something wrong and it comes
+                back sooner; get it right a few times and it steps out of the way.
+                Progress tracking shows exactly which topics are lagging, so the time you
+                spend goes where it's actually needed.
+              </p>
+            </details>
+          </div>
+
+          <div class="split-media card-stack">
+            <div class="card-ghost card-ghost--far"></div>
+            <div class="card-ghost card-ghost--near"></div>
+            <div class="q-card">
+              <p class="q-instruction">Translate the word.</p>
+              <p class="q-word">todavía</p>
+              <ul class="q-options">
+                <li>already</li>
+                <li class="is-correct">
+                  still, yet
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                </li>
+                <li>never</li>
+              </ul>
+              <p class="q-meta">Weakest topic: making plans · 12 cards due</p>
+            </div>
+          </div>
+        </div>
+        </div>
+
+        {/* Half two: role play. The four points below belong to THIS half, not
+            to the band — "chapters, not lessons" says nothing about practice
+            sessions — so they live inside it. */}
+        <div class="half">
+        <div class="split split--media-right split--top">
+          <div class="section-copy">
+            <p class="eyebrow">ROLE PLAY</p>
+            <h3 class="sub-heading">Streaks are good. Wanting to come back is better.</h3>
+            <p>
+              <strong>Wurlds</strong> are role-playing games you live in the language
+              you're learning. You know how the usual thing goes: a streak you're scared
+              to break, a reminder you swipe away, and a month later you've quietly
+              stopped. This works the other way round — you come back because you left a
+              conversation half-finished, and you want to know what happens next.
+            </p>
+            <details class="more">
+              <summary>How wurlds work</summary>
+              <p>
+                Pick a setting — a city flat, a magic academy, a noir case — and become
+                someone in it. Every reply is a choice the story remembers. Tap any word
+                you don't know and it joins your deck, exactly as it would in a chat.
+              </p>
+            </details>
+
+            <ul class="wurlds-points">
+              {wurldsPoints.map((p) => (
+                <li>
+                  <span class="wurlds-point-icon">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" set:html={p.svg}></svg>
+                  </span>
+                  <div>
+                    <h3>{p.title}</h3>
+                    <p>{p.desc}</p>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* No client:* directive on purpose — the mockup is static, so Astro
+              prerenders it to HTML and this section ships zero JS. */}
+          <div class="split-media"><WurldsDemo /></div>
+        </div>
+        </div>
+      </section>
+    </div>
+
+    {/* ---- Pricing ---- */}
+    <section class="section pricing-section">
+      <p class="eyebrow">PRICING</p>
+      <h2>Free while we're growing</h2>
+      <p class="pricing-intro">
+        Full access is likely to be between $1 and $4 a month. We're happy to offer this at an
+        initial $0 cost to give us time to build out a quality app.
+      </p>
+      <div class="pricing-banner">All features included — no credit card required</div>
+      <div class="pricing-grid">
+        {plans.map((plan) => (
+          <div class={plan.pro ? 'pricing-card pricing-card--pro' : 'pricing-card'}>
+            <div class="pricing-card-inner">
+              <h3 class="pricing-name">{plan.name}</h3>
+              <p class="pricing-price"><span>{plan.price}</span><small>{plan.period}</small></p>
+              <ul class="pricing-features">
+                {plan.features.map((feat) => (
+                  <li>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={plan.pro ? '#7340f5' : 'currentColor'} stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                    {feat}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        ))}
+      </div>
+    </section>
+
+    {/* ---- Final CTA ---- */}
+    {/* The single download point for the whole page — "Get started" anywhere
+        above scrolls here, so the badges live with the final CTA rather than
+        being split across two sections. */}
+    <section class="section center" id="get">
+      <h2 class="final-heading">Start a conversation.<br />Start learning.</h2>
+      <p class="lede">No textbooks. No nagging. Your next language is just a message away.</p>
+      <div class="hero-cta-row languages-row">
+        <button type="button" id="open-languages" class="cta cta-secondary">See all {langCount} languages</button>
+      </div>
+      <div class="store-row">
+        <figure class="store-badge store-badge--apple">
+          <img src="https://tools.applemediaservices.com/api/badges/download-on-the-app-store/black/en-us?size=250x83" alt="Download on the App Store" />
+          <figcaption>Coming soon</figcaption>
+        </figure>
+        <figure class="store-badge store-badge--play">
+          <img src="https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png" alt="Get it on Google Play" />
+          <figcaption>Coming soon</figcaption>
+        </figure>
+      </div>
+      <a class="ghost-link" id="open-web" href={APP_URL} data-app-link>Continue in browser →</a>
+    </section>
+
+    <footer class="site-footer">
+      <nav>
+        <a href={APP_URL} data-app-link>Open app</a>
+        <span>·</span>
+        <a href="/account">Plans</a>
+        <span>·</span>
+        <a href="/privacy">Privacy</a>
+        <span>·</span>
+        <a href="/terms">Terms</a>
+      </nav>
+      <p class="footer-note">© {new Date().getFullYear()} Wurld</p>
+    </footer>
+  </main>
+
+  <LanguagesDialog />
+</Layout>
+
+<style>
+  main { display: block; }
+
+  /* One vertical rhythm for the whole page. Sections that need to deviate
+     scale the same token rather than inventing their own numbers. */
+  .section {
+    max-width: var(--max-w);
+    margin: 0 auto;
+    padding: var(--section-y) 24px;
+  }
+  .section.center { text-align: center; }
+  /* The closing block gets extra air above it to separate it from pricing. */
+  #get { padding-top: calc(var(--section-y) * 1.4); }
+  .center .cta { margin-top: 8px; }
+  .hero-cta-row {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+    margin-top: 8px;
+  }
+
+  .ghost-link {
+    display: block;
+    margin: 14px auto 0;
+    background: none;
+    border: none;
+    color: var(--color-fg-muted);
+    font: inherit;
+    font-weight: 600;
+    font-size: 0.95rem;
+    cursor: pointer;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    text-decoration-color: var(--color-border-strong);
+  }
+  .ghost-link:hover { color: var(--color-fg); }
+
+  /* Hero — the one section that stays narrow; a wide centred hero reads badly. */
+  .hero {
+    max-width: var(--max-w-narrow);
+    text-align: center;
+    padding-top: calc(var(--section-y) * 0.85);
+    padding-bottom: calc(var(--section-y) * 0.45);
+  }
+  h1 {
+    font-size: clamp(2.1rem, 6vw, 3rem);
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+    margin: 0 0 1.25rem;
+    font-weight: 800;
+  }
+  .lede {
+    font-size: 1.1rem;
+    color: var(--color-fg-muted);
+    margin: 0 auto 1.75rem;
+    max-width: 36rem;
+  }
+
+  h2 {
+    font-size: clamp(1.5rem, 4vw, 1.75rem);
+    font-weight: 800;
+    line-height: 1.25;
+    margin: 0 0 1.5rem;
+  }
+  .center h2 { margin-bottom: 0.75rem; }
+  .final-heading { margin-bottom: 0.75rem; }
+  .languages-row { margin-bottom: 2rem; }
+
+  .eyebrow {
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    color: var(--color-fg-muted);
+    margin: 0 0 0.75rem;
+  }
+  .eyebrow.center { text-align: center; }
+
+
+  /* Flag marquee */
+  .marquee-outer {
+    width: 100%;
+    max-width: 520px;
+    margin: 0 auto;
+    overflow: hidden;
+    -webkit-mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
+    mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
+  }
+  .marquee-track {
+    display: flex;
+    width: max-content;
+    animation: marquee 75s linear infinite;
+  }
+  .marquee-flag {
+    font-size: 22px;
+    margin-right: 20px;
+    line-height: 32px;
+  }
+  @keyframes marquee {
+    from { transform: translateX(0); }
+    to { transform: translateX(-50%); }
+  }
+
+  /* Language hook */
+  .hook { text-align: center; padding-top: calc(var(--section-y) * 0.5); padding-bottom: calc(var(--section-y) * 0.5); }
+  .hook-lead {
+    font-size: 1.15rem;
+    font-weight: 600;
+    margin: 0 0 0.5rem;
+  }
+
+  /* Demo band */
+  /* Shares the Wurlds band treatment — the two demo bands are siblings, so
+     they should read as the same kind of surface. */
+  .demo-band {
+    width: 100%;
+    background:
+      radial-gradient(120% 60% at 50% 0%, color-mix(in srgb, var(--color-accent) 9%, transparent), transparent 70%),
+      var(--color-bg-hover);
+    border-top: 1px solid var(--color-border);
+    border-bottom: 1px solid var(--color-border);
+  }
+  /* The demo must fit one screen: the phone's width is derived from the
+     height left over after the eyebrow, caption block and padding, so the
+     whole band stays under 100vh on short viewports too. */
+  .demo-section {
+    padding: calc(var(--section-y) * 0.35) 8px;
+    /* The caption needs real air under the phones; that space is bought back
+       out of the phone height so the band still fits one screen. Raising the
+       gap means raising the subtracted constant to match. */
+    --demo-caption-gap: 30px;
+    --demo-phone-w: min(264px, calc((100svh - 292px) * 9 / 19.5));
+  }
+
+  /* Two-column split for the Revision / Adventure sections. Mobile stacks
+     copy-then-media; desktop puts the media alongside, on alternating sides.
+     DOM order is always copy-first so the mobile stack needs no reordering —
+     the media-left variant swaps with `order` at the breakpoint only. */
+  .split { display: grid; gap: 28px; }
+  .split-media { justify-self: center; width: 100%; }
+  @media (min-width: 900px) {
+    .split {
+      grid-template-columns: 1fr minmax(280px, 340px);
+      align-items: center;
+      gap: 56px;
+    }
+    .split--media-left { grid-template-columns: minmax(280px, 340px) 1fr; }
+    /* For media much taller than its copy (the phone), top-align instead —
+       centring leaves the text floating in the middle of the row. */
+    .split--top { align-items: start; }
+    .split--media-left .section-copy { order: 2; }
+    .split--media-left .split-media { order: 1; }
+    /* Inside a split the copy no longer needs its own bottom gap. */
+    .split .section-copy { margin-bottom: 0; }
+  }
+
+  /* Revision — plain page background on purpose. It's the quiet beat between
+     the features grid and the Wurlds band; giving it its own colour would make
+     three competing bands in a row. */
+  .vocab-section,
+  .extra-section { text-align: center; }
+
+  /* Prose inside a copy column, whichever section it's in. */
+  .section-copy p:not(.eyebrow) {
+    font-size: 1rem;
+    color: var(--color-fg-muted);
+    margin: 0 0 1rem;
+  }
+  .section-copy p:last-child { margin-bottom: 0; }
+  .section-copy strong { color: var(--color-fg); font-weight: 700; }
+
+  /* Progressive disclosure for detail that's worth keeping but too long to
+     leave in the flow. Native <details>, so these sections still ship no JS. */
+  .more { margin-top: 1rem; }
+  .more > summary {
+    cursor: pointer;
+    list-style: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.92rem;
+    font-weight: 700;
+    color: var(--color-accent);
+  }
+  .more > summary::-webkit-details-marker { display: none; }
+  .more > summary::after {
+    content: '';
+    width: 7px;
+    height: 7px;
+    border-right: 2px solid currentColor;
+    border-bottom: 2px solid currentColor;
+    transform: translateY(-2px) rotate(45deg);
+    transition: transform 0.2s ease;
+  }
+  .more[open] > summary::after { transform: translateY(1px) rotate(-135deg); }
+  .more > summary:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 3px;
+    border-radius: 4px;
+  }
+  /* Outranks `.section-copy p:not(.eyebrow)`, which would otherwise zero this
+     out and leave the revealed text cramped against the summary. */
+  .section-copy details.more > p { margin-top: 0.9rem; }
+
+  /* The band's own title sits above its two halves. Title left, lead right on
+     desktop: a single 36rem column left the other half of the band empty. */
+  .band-intro {
+    margin-bottom: calc(var(--section-y) * 0.9);
+    text-align: left;
+  }
+  .band-lead {
+    font-size: 1rem;
+    color: var(--color-fg-muted);
+    margin: 0;
+    max-width: var(--measure);
+  }
+  @media (min-width: 900px) {
+    .band-intro {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 56px;
+      align-items: end;
+    }
+    .band-title { margin-bottom: 0; }
+  }
+  .band-title {
+    font-size: clamp(1.7rem, 4.6vw, 2.15rem);
+    font-weight: 800;
+    line-height: 1.2;
+    margin: 0 0 1rem;
+  }
+  .band-title em { font-style: italic; }
+  /* Half-headings, a step down from the band title. */
+  .sub-heading {
+    font-size: clamp(1.2rem, 3vw, 1.35rem);
+    font-weight: 800;
+    line-height: 1.3;
+    margin: 0 0 1rem;
+  }
+  /* Two halves inside one band need clear air between them — more than the
+     gap inside a half, so the pairing reads. */
+  .half + .half { margin-top: calc(var(--section-y) * 1.15); }
+  /* Eyebrow, heading and body share one left edge — the SAME left edge as
+     every other section on the page (Features, Pricing). Capped to the
+     shared reading measure, but aligned left rather than centred inside the
+     section, which is what pushed these headings further in than the rest. */
+  .section-copy {
+    max-width: var(--measure);
+    margin: 0 0 2rem;
+    text-align: left;
+  }
+  .revision-lede {
+    font-size: 1rem;
+    color: var(--color-fg-muted);
+    margin: 0;
+  }
+
+  /* Practice question card + the deck peeking out behind it */
+  .card-stack {
+    position: relative;
+    max-width: 320px;
+    margin: 0 auto;
+    padding-top: 18px;
+  }
+  .card-ghost {
+    position: absolute;
+    left: 50%;
+    translate: -50% 0;
+    border-radius: var(--radius-lg);
+    background: var(--color-bg-elevated);
+    border: 1px solid var(--color-border-strong);
+    height: 26px;
+  }
+  .card-ghost--far { top: 0; width: 76%; }
+  .card-ghost--near { top: 9px; width: 88%; }
+  .q-card {
+    position: relative;
+    background: var(--color-bg-elevated);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-xl);
+    padding: 20px 18px 16px;
+    text-align: left;
+    box-shadow: 0 6px 20px -8px rgba(0, 0, 0, 0.18);
+  }
+  .q-instruction {
+    margin: 0 0 0.35rem;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--color-fg-subtle);
+  }
+  .q-word {
+    margin: 0 0 1rem;
+    font-size: 1.6rem;
+    font-weight: 800;
+    letter-spacing: -0.01em;
+  }
+  /* Flashcard variant of the same card shell. A whole phrase carries its own
+     context, so there's no gloss or example sentence to show. */
+  .f-phrase {
+    margin: 0 0 0.4rem;
+    font-size: 1.3rem;
+    font-weight: 800;
+    line-height: 1.3;
+    letter-spacing: -0.01em;
+  }
+  .f-native {
+    margin: 0;
+    font-size: 1rem;
+    line-height: 1.4;
+    color: var(--color-fg-muted);
+  }
+
+  .q-options { list-style: none; margin: 0; padding: 0; display: grid; gap: 7px; }
+  /* Outline via inset shadow, not border: a transparent border leaves the
+     filled option's background curving to a different radius than the border
+     box, which notches its corners. box-shadow also keeps every option the
+     same size whether or not it's outlined. */
+  .q-options li {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    box-shadow: inset 0 0 0 1.5px var(--color-border);
+    border-radius: var(--radius-md);
+    padding: 9px 12px;
+    font-size: 0.92rem;
+    font-weight: 600;
+    color: var(--color-fg-muted);
+  }
+  .q-options .is-correct {
+    box-shadow: none;
+    background: var(--gradient-accent);
+    color: #fff;
+  }
+  .q-meta {
+    margin: 0.9rem 0 0;
+    font-size: 0.75rem;
+    color: var(--color-fg-subtle);
+  }
+
+  /* Wurlds band — same treatment as .demo-band so the two demos read as
+     siblings, with a faint brand wash to mark it as the "other mode". */
+  .wurlds-band {
+    width: 100%;
+    background:
+      radial-gradient(120% 60% at 50% 0%, color-mix(in srgb, var(--color-accent) 9%, transparent), transparent 70%),
+      var(--color-bg-hover);
+    border-top: 1px solid var(--color-border);
+    border-bottom: 1px solid var(--color-border);
+  }
+  .wurlds-heading { margin-bottom: 1.25rem; }
+  .wurlds-lede {
+    font-size: 1rem;
+    color: var(--color-fg-muted);
+    margin: 0 0 1rem;
+  }
+
+  /* Inside the role-play copy column, so a single column at every width. */
+  .wurlds-points {
+    list-style: none;
+    margin: 1.75rem 0 0;
+    padding: 0;
+    display: grid;
+    gap: 14px;
+    text-align: left;
+  }
+  .wurlds-points li { display: flex; gap: 12px; align-items: flex-start; }
+  .wurlds-point-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    flex-shrink: 0;
+    border-radius: var(--radius-md);
+    background: var(--color-bg-elevated);
+    border: 1px solid var(--color-border);
+    color: var(--color-accent);
+  }
+  .wurlds-points h3 { margin: 0 0 0.15rem; font-size: 0.95rem; }
+  .wurlds-points p { margin: 0; color: var(--color-fg-muted); font-size: 0.9rem; line-height: 1.45; }
+
+
+  /* Install / store */
+  .store-row {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    align-items: flex-start;
+    flex-wrap: wrap;
+    margin-bottom: 1.25rem;
+  }
+  .store-badge {
+    margin: 0;
+    opacity: 0.45;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  /* Both badges share the same box height. The Google Play PNG ships with its
+     own internal padding; we add matching padding to the App Store badge so the
+     visible marks are the same size and both sit naturally centered. */
+  .store-badge img { height: 58px; width: auto; display: block; box-sizing: border-box; }
+  .store-badge--apple img { padding: 8px 13px; }
+  .store-badge figcaption { font-size: 0.65rem; color: var(--color-fg-subtle); margin-top: 4px; }
+
+  /* Features */
+  .feature-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 12px;
+  }
+  .feature-card {
+    background: var(--color-bg-elevated);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-xl);
+    padding: 20px;
+  }
+  .feature-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: var(--radius-md);
+    background: var(--color-bg);
+    margin-bottom: 10px;
+  }
+  .feature-card h3 { margin: 0 0 0.4rem; font-size: 1rem; }
+  .feature-card p { margin: 0; color: var(--color-fg-muted); font-size: 0.9rem; line-height: 1.45; }
+
+  /* Pricing */
+  /* Pricing is the one deliberately centred content section — the plans read
+     as a symmetrical pair, so a left-aligned heading over them looks off. The
+     cards themselves opt back out below. */
+  .pricing-section { text-align: center; }
+  .pricing-intro { color: var(--color-fg-muted); margin: -0.5rem auto 1.25rem; max-width: var(--measure); }
+  .pricing-banner,
+  .pricing-grid { max-width: var(--max-w-narrow); margin-left: auto; margin-right: auto; }
+  .pricing-banner {
+    text-align: center;
+    font-weight: 700;
+    font-size: 0.9rem;
+    color: var(--color-accent);
+    background: color-mix(in srgb, var(--color-accent) 10%, transparent);
+    border: 1px solid color-mix(in srgb, var(--color-accent) 30%, transparent);
+    border-radius: var(--radius-lg);
+    padding: 12px;
+    margin-bottom: 16px;
+  }
+  .pricing-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+  @media (min-width: 600px) {
+    .pricing-grid { grid-template-columns: 1fr 1fr; }
+  }
+  .pricing-card {
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-xl);
+    background: var(--color-bg-elevated);
+  }
+  .pricing-card--pro {
+    border: none;
+    background: var(--gradient-accent);
+    padding: 2px;
+  }
+  .pricing-card-inner {
+    padding: 24px;
+    height: 100%;
+    /* Cards keep their own left alignment inside the centred section. */
+    text-align: left;
+  }
+  .pricing-card--pro .pricing-card-inner {
+    background: var(--color-bg-elevated);
+    border-radius: calc(var(--radius-xl) - 2px);
+  }
+  .pricing-name { margin: 0 0 0.25rem; font-size: 1.15rem; font-weight: 800; }
+  .pricing-price { margin: 0 0 1rem; display: flex; align-items: baseline; gap: 2px; }
+  .pricing-price span { font-size: 2.25rem; font-weight: 800; }
+  .pricing-price small { color: var(--color-fg-muted); font-size: 0.9rem; }
+  .pricing-features { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+  .pricing-features li { display: flex; align-items: center; gap: 8px; font-size: 0.92rem; }
+
+  /* Footer */
+  .site-footer {
+    max-width: var(--max-w);
+    margin: 0 auto;
+    padding: 32px 24px 56px;
+    border-top: 1px solid var(--color-border);
+    text-align: center;
+  }
+  .site-footer nav { display: flex; gap: 10px; justify-content: center; align-items: center; flex-wrap: wrap; }
+  .site-footer a { color: var(--color-accent); text-decoration: none; font-size: 0.9rem; }
+  .site-footer span { color: var(--color-fg-subtle); }
+  .footer-note { color: var(--color-fg-subtle); font-size: 0.8rem; margin-top: 12px; }
+</style>
+
+<script>
+  // If the PWA is already installed, relabel the browser link to open it.
+  const webLink = document.getElementById('open-web');
+  if (webLink && 'getInstalledRelatedApps' in navigator) {
+    (navigator as any)
+      .getInstalledRelatedApps()
+      .then((apps: unknown[]) => {
+        if (apps.length > 0) webLink.textContent = 'Open the installed app →';
+      })
+      .catch(() => {});
+  }
+
+  // "Get started" should CENTER the download section in the viewport, not jam
+  // it to the top (native #anchor behaviour). Intercept and scroll-to-center.
+  const getSection = document.getElementById('get');
+  if (getSection) {
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    document.querySelectorAll('a[href="#get"]').forEach((link) => {
+      link.addEventListener('click', (e) => {
+        e.preventDefault();
+        getSection.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'center' });
+      });
+    });
+  }
+</script>
